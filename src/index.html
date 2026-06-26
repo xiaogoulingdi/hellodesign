@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Design Engineer Portfolio Study</title>
+    <meta
+      name="description"
+      content="A study build of a design-engineering portfolio with shader light and editorial layout."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <canvas id="background-canvas" aria-hidden="true"></canvas>
+    <canvas id="hello-canvas" aria-hidden="true"></canvas>
+    <canvas id="light-canvas" aria-hidden="true"></canvas>
+
+    <div class="loader" aria-hidden="true">
+      <div class="loader__track">
+        <div class="loader__bar"></div>
+      </div>
+    </div>
+
+    <header class="site-header" aria-label="Primary navigation">
+      <div class="header-row">
+        <a class="hit-area brand reveal" href="#top">STUDIO.DESIGN</a>
+        <nav class="nav-actions" aria-label="Sections">
+          <a class="hit-area reveal" href="#selected-work">Work</a>
+          <a class="hit-area reveal" href="#contact">Contact</a>
+          <button class="hit-area reveal" id="theme-toggle" type="button">THEME[A]</button>
+          <button class="hit-area reveal" id="sound-toggle" type="button">SOUND[|]</button>
+        </nav>
+      </div>
+      <div class="header-row header-row--bottom">
+        <span class="hit-area reveal" id="clock">GMT+8 CN --:--</span>
+        <span class="hit-area reveal pointer-readout" id="pointer">0001 X 0001 Y</span>
+      </div>
+    </header>
+
+    <main id="top" class="scroll-shell">
+      <section class="hero section-pad">
+        <div class="hero__intro grid-12">
+          <p class="kicker reveal">Design &amp;<br />Engineering</p>
+          <p class="aside-copy reveal">Thinking in systems. Designing with care.</p>
+          <p class="bio reveal">
+            I am a design engineer exploring product craft, AI workflows, and tools that help
+            teams move from idea to durable interface.
+          </p>
+        </div>
+        <h1 class="hero-title">
+          <span class="reveal">I bring</span>
+          <span class="reveal">craft &amp; taste</span>
+          <span class="reveal">to digital work</span>
+        </h1>
+      </section>
+
+      <section class="manifesto section-pad grid-12">
+        <div class="signature" aria-hidden="true">
+          <svg viewBox="0 0 320 154" role="img">
+            <path d="M34 119C68 54 102 31 122 49c15 14-8 49-28 48-18-1-15-29 4-41 39-26 83 35 123-3 24-22 40-38 65-26" />
+            <path d="M54 92c39-26 90-39 151-39 31 0 61 5 92 16" />
+            <path d="M216 44c-15 30-23 55-22 75 2 25 35-20 58-60" />
+          </svg>
+        </div>
+        <div class="manifesto__copy">
+          <p class="large-copy reveal">
+            I explore how to shape AI-era workflows with craft and taste, building the next
+            generation of digital products.
+          </p>
+          <p class="large-copy muted reveal">
+            The practice spans prototypes, systems, coding projects, collaboration rituals, and
+            the quiet details that make software feel considered.
+          </p>
+        </div>
+      </section>
+
+      <section id="selected-work" class="work section-pad">
+        <div class="work-grid">
+          <article class="work-card work-card--wide reveal">
+            <a href="#" aria-label="Reunimos study project">
+              <div class="thumb"><span>Coding Project</span></div>
+              <div class="work-meta"><strong>Reunimos Study</strong><span>2024-2026</span></div>
+            </a>
+          </article>
+          <article class="work-card work-card--left reveal">
+            <a href="#" aria-label="Inspire Mono study project">
+              <div class="thumb"><span>Coding Project</span></div>
+              <div class="work-meta"><strong>Inspire Mono</strong><span>2025</span></div>
+            </a>
+          </article>
+          <article class="work-card reveal">
+            <a href="#" aria-label="Wasm design utils study project">
+              <div class="thumb"><span>Coding Project</span></div>
+              <div class="work-meta"><strong>Wasm Design Utils</strong><span>2025</span></div>
+            </a>
+          </article>
+          <article class="work-card work-card--small reveal">
+            <a href="#" aria-label="Vector symbols study project">
+              <div class="thumb"><span>Coding Project</span></div>
+              <div class="work-meta"><strong>VectorSymbols</strong><span>2023 ↗</span></div>
+            </a>
+          </article>
+          <article class="work-card work-card--small reveal">
+            <a href="#" aria-label="Dark side study project">
+              <div class="thumb"><span>Coding Project</span></div>
+              <div class="work-meta"><strong>DarkSide</strong><span>2021 ↗</span></div>
+            </a>
+          </article>
+          <article class="work-card work-card--small reveal">
+            <a href="#" aria-label="Cloud drive study project">
+              <div class="thumb thumb--quiet"></div>
+              <div class="work-meta"><strong>Cloud Drive</strong><span>2020-2022</span></div>
+            </a>
+          </article>
+          <article class="work-card work-card--small reveal">
+            <a href="#" aria-label="Shore icon study project">
+              <div class="thumb thumb--quiet"></div>
+              <div class="work-meta"><strong>Shore Icon</strong><span>2022</span></div>
+            </a>
+          </article>
+          <article class="work-card work-card--small reveal">
+            <a href="#" aria-label="Collaboration platform study project">
+              <div class="thumb thumb--quiet"></div>
+              <div class="work-meta"><strong>Team Space</strong><span>2018-2020</span></div>
+            </a>
+          </article>
+        </div>
+      </section>
+
+      <section class="purpose section-pad" aria-hidden="true">
+        <p><span class="reveal">Innovate</span><span class="reveal">with</span><span class="reveal">purpose</span></p>
+      </section>
+
+      <footer id="contact" class="contact section-pad">
+        <div class="contact-title" aria-label="Contact">
+          <div><span class="reveal">Let's</span><span class="reveal align-right">Create</span></div>
+          <div><span class="reveal">Something</span></div>
+          <div><span class="reveal align-right">Extraordinary</span></div>
+        </div>
+        <div class="contact-links">
+          <a class="hit-area reveal" href="mailto:hello@example.com">hello@example.com</a>
+          <div>
+            <a class="hit-area reveal" href="#">Twitter/X</a>
+            <a class="hit-area reveal" href="#">Figma</a>
+            <a class="hit-area reveal" href="#">GitHub</a>
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
