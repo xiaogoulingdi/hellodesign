@@ -18,7 +18,28 @@ hellodesign/
   src/
     index.html
     styles.css
-    script.js
+    scripts/
+      main.js
+      config/
+        site.js
+        stickers.js
+      layers/
+        background-layer.js
+        hello-layer.js
+        sticker-layer.js
+        light-layer.js
+      state/
+        app-state.js
+      ui/
+        hud.js
+      utils/
+        canvas.js
+        math.js
+    assets/
+      fonts/
+      images/
+      stickers/
+      textures/
   scripts/
     build.mjs
     clean.mjs
@@ -44,7 +65,34 @@ npm run serve
 
 Then open `http://localhost:4173`.
 
-For quick iteration, you can also open `src/index.html` directly in a browser.
+For quick iteration against source files:
+
+```bash
+npm run dev
+```
+
+Because the code uses ES modules, use the local server instead of opening `src/index.html` with `file://`.
+
+## Editing Guide
+
+Common things to change:
+
+- Handwritten text and font stack: `src/scripts/config/site.js`
+- Sticker positions, type, colors, and timing inputs: `src/scripts/config/stickers.js`
+- Handwritten tube rendering: `src/scripts/layers/hello-layer.js`
+- Falling sticker drawing: `src/scripts/layers/sticker-layer.js`
+- Background grid and base color: `src/scripts/layers/background-layer.js`
+- Pointer light and global bloom: `src/scripts/layers/light-layer.js`
+- Navigation, clock, theme toggle, and reveal behavior: `src/scripts/ui/hud.js`
+
+Asset folders are intentionally empty and tracked with `.gitkeep` files:
+
+- `src/assets/fonts/`
+- `src/assets/images/`
+- `src/assets/stickers/`
+- `src/assets/textures/`
+
+Put future replacement fonts, emoji art, portraits, stickers, and texture images there.
 
 ## Interaction Notes
 

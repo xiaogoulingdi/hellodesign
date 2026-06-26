@@ -5,7 +5,8 @@ import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const publicRoot = join(root, "dist");
+const requestedRoot = process.argv[2] || "dist";
+const publicRoot = join(root, requestedRoot);
 const port = Number(process.env.PORT || 4173);
 const types = {
   ".html": "text/html; charset=utf-8",
@@ -34,5 +35,5 @@ createServer(async (request, response) => {
     response.end("Not found");
   }
 }).listen(port, () => {
-  console.log(`Serving dist/ at http://localhost:${port}`);
+  console.log(`Serving ${requestedRoot}/ at http://localhost:${port}`);
 });
