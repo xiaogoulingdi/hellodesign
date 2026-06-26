@@ -30,6 +30,7 @@ hellodesign/
         light-layer.js
       state/
         app-state.js
+        theme-state.js
       ui/
         hud.js
       utils/
@@ -79,6 +80,7 @@ Common things to change:
 
 - Handwritten text and font stack: `src/scripts/config/site.js`
 - Sticker positions, type, colors, and timing inputs: `src/scripts/config/stickers.js`
+- Default theme behavior: `src/scripts/config/site.js`
 - Handwritten tube rendering: `src/scripts/layers/hello-layer.js`
 - Falling sticker drawing: `src/scripts/layers/sticker-layer.js`
 - Background grid and base color: `src/scripts/layers/background-layer.js`

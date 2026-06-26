@@ -1,5 +1,5 @@
 export const siteConfig = {
-  defaultTheme: "dark",
+  defaultTheme: "system",
   clockTimeZone: "Asia/Shanghai",
   hello: {
     text: "hello",

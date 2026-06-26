@@ -1,4 +1,5 @@
 import { siteConfig } from "../config/site.js";
+import { createThemeState } from "../state/theme-state.js";
 
 export function initHud({ root, state, scrollShell, loader }) {
   const clock = document.querySelector("#clock");
@@ -6,9 +7,11 @@ export function initHud({ root, state, scrollShell, loader }) {
   const themeToggle = document.querySelector("#theme-toggle");
   const soundToggle = document.querySelector("#sound-toggle");
 
-  if (siteConfig.defaultTheme === "dark") {
-    root.classList.add("dark");
-  }
+  const theme = createThemeState({
+    root,
+    button: themeToggle,
+    defaultMode: siteConfig.defaultTheme
+  });
 
   function updateClock() {
     const parts = new Intl.DateTimeFormat("en-GB", {
@@ -36,8 +39,7 @@ export function initHud({ root, state, scrollShell, loader }) {
   });
 
   themeToggle.addEventListener("click", () => {
-    root.classList.toggle("dark");
-    themeToggle.textContent = root.classList.contains("dark") ? "THEME[D]" : "THEME[A]";
+    theme.next();
   });
 
   soundToggle.addEventListener("click", () => {
