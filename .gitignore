@@ -1,5 +1,6 @@
 dist/
 node_modules/
+.analysis/
 .DS_Store
 Thumbs.db
 design视频

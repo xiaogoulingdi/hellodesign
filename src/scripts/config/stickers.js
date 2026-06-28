@@ -1,26 +1,25 @@
+const stickerUrl = (name) => new URL(`../../assets/stickers/${name}`, import.meta.url).href;
+
 export const stickerConfig = [
-  {
-    type: "smile",
-    x: 0.43,
-    y: 0.73,
-    radius: 52,
-    rotation: -0.55,
-    color: "#d8d0b4"
-  },
-  {
-    type: "arrow",
-    x: 0.83,
-    y: 0.73,
-    radius: 58,
-    rotation: 0.42,
-    color: "#1f58e7"
-  },
-  {
-    type: "smile",
-    x: 0.21,
-    y: 0.94,
-    radius: 55,
-    rotation: -0.18,
-    color: "#f2a72c"
-  }
-];
+  "s_01.png",
+  "s_02.png",
+  "s_03.png",
+  "s_04.png",
+  "s_05.png",
+  "s_06.png",
+  "s_07.png",
+  "s_08.png",
+  "s_09.png",
+  "s_10.png",
+  "s_11.png",
+  "s_12.png"
+].map((name, index) => ({
+  src: stickerUrl(name),
+  index,
+  size: 76 + ((index * 37) % 76),
+  x: 0.08 + ((index * 0.173) % 0.84),
+  delay: (index % 6) * 0.055,
+  drift: ((index * 41) % 160) - 80,
+  rotation: ((index * 71) % 160) - 80,
+  speed: 0.74 + ((index * 17) % 42) / 100
+}));

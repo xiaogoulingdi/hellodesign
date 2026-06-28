@@ -1,14 +1,14 @@
 {
   "name": "hellodesign",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "A personal homepage with a glowing handwritten hello interaction.",
+  "description": "A layered WebGL portfolio study inspired by haoqi.design.",
   "type": "module",
   "scripts": {
-    "build": "node scripts/build.mjs",
+    "build": "vite build",
     "clean": "node scripts/clean.mjs",
-    "dev": "node scripts/serve.mjs src",
-    "serve": "node scripts/serve.mjs"
+    "dev": "vite --host 127.0.0.1",
+    "serve": "vite preview --host 127.0.0.1"
   },
   "keywords": [
     "portfolio",
@@ -16,5 +16,11 @@
     "canvas",
     "interaction"
   ],
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "three": "0.185.0"
+  },
+  "devDependencies": {
+    "vite": "8.1.0"
+  }
 }

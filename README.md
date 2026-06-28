@@ -1,121 +1,91 @@
 # hellodesign
 
-A small personal homepage prototype with a glowing handwritten `hello`, scroll-driven motion, pointer-reactive highlights, and an editorial portfolio layout.
+A layered WebGL portfolio study based on the interaction language of `haoqi.design`. The page uses a fixed viewport and a virtual scroll timeline to move through the hero, biography, work grid, hyperspace statement, and contact scenes.
 
-## Features
+The repository currently contains locally downloaded public assets from the reference site. Keep or publish those assets only when you have the appropriate permission.
 
-- Full-screen layered canvas rendering
-- Pointer-driven light bloom, specular highlights, and dot noise
-- Scroll-driven `hello` transform and late-stage falling sticker effect
-- Dark editorial homepage layout with fixed navigation and status HUD
-- Zero runtime dependencies
-- Simple `npm run build` output to `dist/`
+## Stack
 
-## Project Structure
-
-```text
-hellodesign/
-  src/
-    index.html
-    styles.css
-    scripts/
-      main.js
-      config/
-        site.js
-        stickers.js
-      layers/
-        background-layer.js
-        hello-layer.js
-        sticker-layer.js
-        light-layer.js
-      state/
-        app-state.js
-        theme-state.js
-      ui/
-        hud.js
-      utils/
-        canvas.js
-        math.js
-    assets/
-      fonts/
-      images/
-      stickers/
-      textures/
-  scripts/
-    build.mjs
-    clean.mjs
-    serve.mjs
-  docs/
-    screenshots/
-  dist/
-```
+- Vite 8
+- Three.js 0.185
+- Native ES modules
+- Canvas 2D for screen-space effects
+- CSS and semantic HTML for text and layout
 
 ## Development
 
-Build the site:
-
 ```bash
-npm run build
-```
-
-Serve the built files locally:
-
-```bash
-npm run serve
-```
-
-Then open `http://localhost:4173`.
-
-For quick iteration against source files:
-
-```bash
+npm install
 npm run dev
 ```
 
-Because the code uses ES modules, use the local server instead of opening `src/index.html` with `file://`.
+Open `http://127.0.0.1:5173/`.
 
-## Editing Guide
+Production build:
 
-Common things to change:
+```bash
+npm run build
+npm run serve
+```
 
-- Handwritten text and font stack: `src/scripts/config/site.js`
-- Sticker positions, type, colors, and timing inputs: `src/scripts/config/stickers.js`
-- Default theme behavior: `src/scripts/config/site.js`
-- Handwritten tube rendering: `src/scripts/layers/hello-layer.js`
-- Falling sticker drawing: `src/scripts/layers/sticker-layer.js`
-- Background grid and base color: `src/scripts/layers/background-layer.js`
-- Pointer light and global bloom: `src/scripts/layers/light-layer.js`
-- Navigation, clock, theme toggle, and reveal behavior: `src/scripts/ui/hud.js`
+The deployable output is written to `dist/`.
 
-Asset folders are intentionally empty and tracked with `.gitkeep` files:
+## Layered Architecture
 
-- `src/assets/fonts/`
-- `src/assets/images/`
-- `src/assets/stickers/`
-- `src/assets/textures/`
+```text
+src/
+  index.html                     Text, links, scene markup
+  styles.css                     Layout, theme, typography, responsive rules
+  assets/
+    audio/                       Background audio
+    fonts/                       Local typefaces
+    images/                      Portrait and global images
+    models/                      hello.gltf, cursor.glb, cnt.gltf
+    stickers/                    Falling sticker PNG files
+    work/                        Portfolio thumbnails
+  scripts/
+    main.js                      Application bootstrap and render loop
+    config/
+      site.js                    Timeline ranges and theme defaults
+      stickers.js                Sticker assets and particle parameters
+    layers/
+      scene-layer.js             DOM scene visibility and transitions
+      webgl-layer.js             Three.js models, lights, and materials
+      fx-layer.js                Halftone, pointer glow, and hyperspace lines
+      sticker-layer.js           Image-based falling sticker animation
+    state/
+      timeline-state.js          Wheel, touch, keyboard, pointer state
+      theme-state.js             System/dark/light theme manager
+    ui/
+      hud.js                     Clock, pointer readout, sound, navigation
+    utils/
+      canvas.js
+      math.js
+```
 
-Put future replacement fonts, emoji art, portraits, stickers, and texture images there.
+Each layer reads the shared timeline state and owns only its own rendering. Text can be edited without touching WebGL, and assets can be replaced without changing the timeline code.
 
-## Interaction Notes
+## Common Edits
 
-The visual effect is split into three canvas layers:
+- Page text and links: `src/index.html`
+- Scroll duration and scene boundaries: `src/scripts/config/site.js`
+- Sticker files and fall behavior: `src/scripts/config/stickers.js`
+- 3D color, lighting, model scale: `src/scripts/layers/webgl-layer.js`
+- Speed lines, halftone, pointer glow: `src/scripts/layers/fx-layer.js`
+- Scene transitions and work-grid travel: `src/scripts/layers/scene-layer.js`
+- Fonts, spacing, mobile layout: `src/styles.css`
 
-- `background-canvas`: grid, base color, subtle motion
-- `hello-canvas`: handwritten tube lettering, highlights, halftone texture, falling stickers
-- `light-canvas`: global pointer bloom and screen-space noise
+Replace assets in their matching folders and keep the same filenames, or update the corresponding path in HTML/config.
 
-The `hello` layer responds to two inputs:
+## Input
 
-- Pointer position changes local highlights and bloom.
-- Scroll progress changes position, rotation, scale, stretch, and sticker visibility.
+- Mouse wheel and trackpad: move the virtual timeline
+- Touch drag: move the virtual timeline on mobile
+- Arrow/Page/Home/End keys: keyboard navigation
+- Pointer movement: camera parallax, lighting, and pixel trail
+- `THEME[A/D/L]`: automatic, dark, and light theme modes
+- `SOUND[\/-]`: local background audio toggle
 
 ## Deployment
 
-The generated `dist/` folder can be deployed to any static host, including GitHub Pages, Netlify, Vercel, or Cloudflare Pages.
-
-This repository includes a GitHub Pages workflow. Push to `main`, enable Pages with **GitHub Actions** as the source, and the workflow will build and publish `dist/`.
-
-## Screenshots
-
-- `docs/screenshots/preview.png`
-- `docs/screenshots/preview-scroll.png`
+The GitHub Pages workflow builds `dist/` from `main`. This local revision has not been pushed; review it locally before publishing.

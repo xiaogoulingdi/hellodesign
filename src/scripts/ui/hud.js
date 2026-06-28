@@ -1,11 +1,15 @@
 import { siteConfig } from "../config/site.js";
 import { createThemeState } from "../state/theme-state.js";
 
-export function initHud({ root, state, scrollShell, loader }) {
+export function initHud({ root, state }) {
   const clock = document.querySelector("#clock");
-  const pointer = document.querySelector("#pointer");
+  const pointer = document.querySelector("#pointer-readout");
+  const pointerPixel = document.querySelector(".pointer-pixel");
   const themeToggle = document.querySelector("#theme-toggle");
   const soundToggle = document.querySelector("#sound-toggle");
+  const soundtrack = document.querySelector("#soundtrack");
+  const loader = document.querySelector(".loader");
+  const loaderValue = document.querySelector(".loader__value");
 
   const theme = createThemeState({
     root,
@@ -14,68 +18,71 @@ export function initHud({ root, state, scrollShell, loader }) {
   });
 
   function updateClock() {
-    const parts = new Intl.DateTimeFormat("en-GB", {
+    const time = new Intl.DateTimeFormat("en-GB", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
       timeZone: siteConfig.clockTimeZone
     }).format(new Date());
-    clock.textContent = `GMT+8 CN ${parts}`;
+    clock.textContent = `GMT+8 CN ${time} 30°C`;
   }
 
   function setPointerReadout(x, y) {
     pointer.textContent = `${String(Math.round(x)).padStart(4, "0")} X ${String(Math.round(y)).padStart(4, "0")} Y`;
   }
 
+  function setLoadProgress(progress) {
+    const value = Math.round(Math.min(Math.max(progress, 0), 100));
+    loader.style.setProperty("--loader-progress", `${value}%`);
+    loaderValue.textContent = String(value).padStart(3, "0");
+  }
+
+  function completeLoad() {
+    setLoadProgress(100);
+    window.setTimeout(() => loader.classList.add("is-hidden"), 420);
+  }
+
   window.addEventListener("pointermove", (event) => {
-    state.setPointer(event.clientX, event.clientY);
+    const movement = Math.hypot(event.movementX || 0, event.movementY || 0);
+    state.setPointer(event.clientX, event.clientY, movement);
     setPointerReadout(event.clientX, event.clientY);
-
-    document.querySelectorAll(".thumb").forEach((thumb) => {
-      const rect = thumb.getBoundingClientRect();
-      thumb.style.setProperty("--mx", `${event.clientX - rect.left}px`);
-      thumb.style.setProperty("--my", `${event.clientY - rect.top}px`);
-    });
+    root.style.setProperty("--pointer-x", `${event.clientX}px`);
+    root.style.setProperty("--pointer-y", `${event.clientY}px`);
+    pointerPixel.hidden = false;
   });
 
-  themeToggle.addEventListener("click", () => {
-    theme.next();
+  document.documentElement.addEventListener("mouseleave", () => {
+    root.style.setProperty("--pointer-x", "-20px");
+    root.style.setProperty("--pointer-y", "-20px");
   });
 
-  soundToggle.addEventListener("click", () => {
-    state.soundOn = !state.soundOn;
-    soundToggle.textContent = state.soundOn ? "SOUND[|]" : "SOUND[ ]";
+  themeToggle.addEventListener("click", theme.next);
+
+  soundToggle.addEventListener("click", async () => {
+    if (soundtrack.paused) {
+      try {
+        await soundtrack.play();
+        soundToggle.textContent = "SOUND[-]";
+      } catch {
+        soundToggle.textContent = "SOUND[!]";
+      }
+    } else {
+      soundtrack.pause();
+      soundToggle.textContent = "SOUND[\\]";
+    }
   });
 
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-    anchor.addEventListener("click", (event) => {
-      const target = document.querySelector(anchor.getAttribute("href"));
-      if (!target) return;
+  document.querySelectorAll("[data-jump]").forEach((control) => {
+    control.addEventListener("click", (event) => {
       event.preventDefault();
-      scrollShell.scrollTo({ top: target.offsetTop, behavior: "smooth" });
+      state.setTarget(Number(control.dataset.jump));
     });
   });
 
   updateClock();
-  setInterval(updateClock, 10000);
-  setTimeout(() => loader.classList.add("is-hidden"), 1350);
-  window.addEventListener("load", () => {
-    setTimeout(() => loader.classList.add("is-hidden"), 250);
-  });
-}
+  setPointerReadout(state.pointer.x, state.pointer.y);
+  setLoadProgress(4);
+  window.setInterval(updateClock, 10000);
 
-export function initRevealObserver(scrollShell) {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) entry.target.classList.add("is-visible");
-      });
-    },
-    { root: scrollShell, threshold: 0.1 }
-  );
-
-  document.querySelectorAll(".reveal").forEach((el, index) => {
-    el.style.transitionDelay = `${Math.min(index * 42, 620)}ms`;
-    observer.observe(el);
-  });
+  return { theme, setLoadProgress, completeLoad };
 }

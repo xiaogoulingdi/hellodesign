@@ -1,10 +1,12 @@
 export const siteConfig = {
   defaultTheme: "system",
   clockTimeZone: "Asia/Shanghai",
-  hello: {
-    text: "hello",
-    fontFamily: '"Brush Script MT", "Segoe Script", "Snell Roundhand", cursive',
-    fontWeight: 900,
-    fontScale: 365
+  totalScroll: 17,
+  scenes: {
+    hero: [0, 2.7],
+    manifesto: [1.05, 4.7],
+    work: [3.9, 9.15],
+    hyper: [9.05, 14.9],
+    contact: [14.1, 17]
   }
 };

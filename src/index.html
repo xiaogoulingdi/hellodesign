@@ -1,153 +1,195 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Design Engineer Portfolio Study</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071552" />
     <meta
       name="description"
-      content="A study build of a design-engineering portfolio with shader light and editorial layout."
+      content="Haoqi Wen - Design Engineering, AI exploration, and digital product craft."
     />
+    <link rel="icon" href="./assets/images/icon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./styles.css" />
+    <title>HAOQI©2026</title>
   </head>
   <body>
-    <canvas id="background-canvas" aria-hidden="true"></canvas>
-    <canvas id="hello-canvas" aria-hidden="true"></canvas>
-    <canvas id="light-canvas" aria-hidden="true"></canvas>
+    <div class="app-shell" id="top">
+      <div class="surface" aria-hidden="true"></div>
+      <div class="grid-overlay" aria-hidden="true"></div>
+      <canvas id="fx-canvas" aria-hidden="true"></canvas>
+      <canvas id="webgl-canvas" aria-hidden="true"></canvas>
+      <div id="sticker-layer" class="sticker-layer" aria-hidden="true"></div>
 
-    <div class="loader" aria-hidden="true">
-      <div class="loader__track">
-        <div class="loader__bar"></div>
+      <div class="loader" role="status" aria-live="polite">
+        <div class="loader__brand">HAOQI.DESIGN</div>
+        <div class="loader__track"><span class="loader__bar"></span></div>
+        <div class="loader__value">000</div>
       </div>
+
+      <header class="site-header">
+        <a class="brand interactive" href="#top" data-jump="0">HAOQI.DESIGN</a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a class="interactive" href="#work" data-jump="4.5">WORK</a>
+          <a class="interactive" href="#contact" data-jump="16.5">CONTACT</a>
+          <button class="interactive" id="theme-toggle" type="button">THEME[A]</button>
+          <button class="interactive" id="sound-toggle" type="button">SOUND[\]</button>
+        </nav>
+      </header>
+
+      <main class="stage" aria-label="Haoqi design portfolio">
+        <section class="scene hero-scene is-active" data-scene="hero" aria-labelledby="hero-title">
+          <div class="hero-intro grid-12">
+            <p class="discipline">Design &amp;<br />Engineering</p>
+            <p class="systems-copy">Thinking in systems.<br />Designing with care.</p>
+            <p class="bio-copy">
+              I'm Haoqi Wen, leading Design Engineering and AI exploration at
+              <button class="protected-name" type="button" aria-label="Protected content">
+                <span aria-hidden="true">■■■■■■</span>
+              </button>, engineering, and AI at scale. Outside work, I build design tools for team
+              efficiency.
+            </p>
+          </div>
+          <h1 class="hero-title" id="hero-title">
+            <span>I bring</span>
+            <span>craft &amp; taste</span>
+            <span>to digital work</span>
+          </h1>
+        </section>
+
+        <section class="scene manifesto-scene" data-scene="manifesto" aria-label="About Haoqi">
+          <figure class="portrait-frame">
+            <img src="./assets/images/m3.png" alt="Portrait of Haoqi Wen" />
+            <svg class="signature" viewBox="0 0 320 154" aria-hidden="true">
+              <path d="M138.27 11.7729C123.15 39.3885 106.223 85.497 102.06 100.029C98.6588 111.899 98.3721 128.792 98.6271 131.165" />
+              <path d="M78.2326 42.073C68.2519 91.6846 24.5171 161.888 11.6117 145.082C-3.90668 124.872 84.4229 80.042 149.127 70.3141C129.181 76.883 121.731 89.3385 127.224 93.3199C137.212 100.559 148.931 80.9071 154.826 68.4373C154.826 68.4373 145.919 84.0047 152.863 86.4553C163.666 90.2674 183.35 47.449 193.768 55.6123C200.863 61.1719 187.995 78.0438 180.889 75.6465C176.521 74.173 179.98 64.5401 184.583 59.6902C186.629 62.1747 192.878 65.6969 201.5 59.9093C210.123 54.1218 217.989 47.6358 220.844 45.1163" />
+              <path d="M235.554 43.4299C221.979 37.3731 206.4 60.4017 215.719 63.1233C224.115 65.5752 234.431 48.0119 239.203 40.1227C237.612 42.7522 234.822 53.6736 235.156 66.1976C235.574 81.8524 228.174 116.927 217.431 114.674C206.687 112.422 217.712 80.3645 242.778 57.3701C262.83 38.9746 269.549 28.9006 270.402 26.163C266.375 32.0516 260.249 44.2468 267.959 45.919C275.669 47.5912 298.148 19.8335 308.423 5.74565" />
+              <path d="M274.89 10.4194L274.409 16.157" />
+            </svg>
+          </figure>
+          <div class="manifesto-copy">
+            <p>I explore how to shape AI-era workflows with craft and taste, building the next generation of digital products.</p>
+            <p class="muted-copy">
+              I’m building <a href="https://reunimos.cc">reunimos™</a>, and previously worked on
+              Alibaba <a href="https://www.alipan.com/">aDrive</a>,
+              <a href="https://www.teambition.com/">Teambition</a>, and 100offer.
+            </p>
+          </div>
+        </section>
+
+        <section class="scene work-scene" id="work" data-scene="work" aria-label="Selected work">
+          <div class="work-grid">
+            <article class="work-card work-card--hero">
+              <a href="https://reunimos.cc">
+                <figure><img src="./assets/work/reunimos01.png" alt="Reunimos project interface" /><span class="tag">CODING PROJECT</span></figure>
+                <div><strong>REUNIMOS™</strong><span>2024-2026</span></div>
+              </a>
+            </article>
+            <article class="work-card work-card--left">
+              <a href="/inspire_mono">
+                <figure><img src="./assets/work/inspire_mono_01.png" alt="Inspire Mono project" /><span class="tag">CODING PROJECT</span></figure>
+                <div><strong>INSPIRE MONO</strong><span>2025</span></div>
+              </a>
+            </article>
+            <article class="work-card work-card--right">
+              <a href="/wasm_design_utils">
+                <figure><img src="./assets/work/wasm01.png" alt="Wasm design utils project" /><span class="tag">CODING PROJECT</span></figure>
+                <div><strong>WASM DESIGN UTILS</strong><span>2025</span></div>
+              </a>
+            </article>
+            <article class="work-card work-card--mid-a">
+              <a href="https://www.figma.com/community/plugin/1255914175202017737/vectorsymbols">
+                <figure><img src="./assets/work/vs01.png" alt="VectorSymbols Figma plugin" /><span class="tag">CODING PROJECT</span></figure>
+                <div><strong>VECTORSYMBOLS</strong><span>2023&nbsp; TOOLS↗</span></div>
+              </a>
+            </article>
+            <article class="work-card work-card--mid-b">
+              <a href="https://www.figma.com/community/plugin/986289377230504703/darkside">
+                <figure><img src="./assets/work/ds01.png" alt="DarkSide Figma plugin" /><span class="tag">CODING PROJECT</span></figure>
+                <div><strong>DARKSIDE</strong><span>2021&nbsp; TOOLS↗</span></div>
+              </a>
+            </article>
+            <article class="work-card work-card--lower-a">
+              <a href="/adrive">
+                <figure><img src="./assets/work/ali01.png" alt="Alibaba aDrive project" /></figure>
+                <div><strong>ADRIVE 阿里云盘</strong><span>2020-2022</span></div>
+              </a>
+            </article>
+            <article class="work-card work-card--lower-b">
+              <a href="/shore_icon">
+                <figure><img src="./assets/work/si.png" alt="Shore Icon project" /></figure>
+                <div><strong>SHORE ICON</strong><span>2022</span></div>
+              </a>
+            </article>
+            <article class="work-card work-card--lower-c">
+              <a href="/teambition">
+                <figure><img src="./assets/work/s01.png" alt="Teambition project" /></figure>
+                <div><strong>TEAMBITION</strong><span>2018-2020</span></div>
+              </a>
+            </article>
+            <article class="work-card work-card--event-a">
+              <a href="https://friends.figma.com/events/details/figma-shanghai-presents-see-hear-touch/">
+                <figure><img src="./assets/work/c4.png" alt="See Hear Touch Figma event" /></figure>
+                <div><strong>FOF: SEE HEAR TOUCH</strong><span>2022&nbsp; EVENT↗</span></div>
+              </a>
+            </article>
+            <article class="work-card work-card--event-b">
+              <a href="https://friends.figma.com/events/details/figma-shanghai-presents-design-system/">
+                <figure><img src="./assets/work/sd01.png" alt="Design System Figma event" /></figure>
+                <div><strong>FOF: DESIGN SYSTEM</strong><span>2021&nbsp; EVENT↗</span></div>
+              </a>
+            </article>
+          </div>
+        </section>
+
+        <section class="scene hyper-scene" data-scene="hyper" aria-label="Design principles">
+          <div class="hyper-headline" aria-live="polite">
+            <span>INNOVATE</span><span>WITH</span><span>PURPOSE</span>
+          </div>
+          <div class="principles">
+            <p class="principle principle--a">Building tomorrow's<br />digital products.</p>
+            <p class="principle principle--b">Independent by<br />design &amp; engineering.</p>
+            <p class="principle principle--c">Clarity first.<br />Delight second.</p>
+            <p class="principle principle--d">Ship in small loops.<br />Aim for long arcs.</p>
+            <div class="orbit-rings" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+        </section>
+
+        <footer class="scene contact-scene" id="contact" data-scene="contact">
+          <div class="contact-title">
+            <span>LET'S</span><span>CREATE</span><span>SOMETHING</span><span>EXTRAORDINARY</span>
+          </div>
+          <div class="contact-meta">
+            <div>
+              <a class="interactive" href="mailto:curiosity.wen@gmail.com">CURIOSITY.WEN@GMAIL.COM</a>
+              <span>HAOQI (C) 2026</span>
+            </div>
+            <div class="social-links">
+              <a class="interactive" href="https://twitter.com/wenhaoqi">TWITTER/X</a>
+              <a class="interactive" href="https://www.figma.com/@wenhaoqi">FIGMA</a>
+              <a class="interactive" href="https://github.com/wenhaoqiasd">GITHUB</a>
+            </div>
+          </div>
+        </footer>
+      </main>
+
+      <aside class="hud" aria-hidden="true">
+        <span id="clock">GMT+8 CN --:-- --°C</span>
+        <span id="pointer-readout">0000 X 0000 Y</span>
+        <svg class="globe" width="48" height="24" viewBox="0 0 48 24" fill="none">
+          <ellipse cx="24" cy="12" rx="22" ry="11"></ellipse>
+          <ellipse cx="24" cy="12" rx="9" ry="11"></ellipse>
+          <path d="M2 12h44M6 7h36M6 17h36"></path>
+        </svg>
+      </aside>
+
+      <div class="scroll-meter" aria-hidden="true">
+        <span class="scroll-meter__track"><i></i></span>
+      </div>
+      <div class="pointer-pixel" aria-hidden="true"></div>
+      <audio id="soundtrack" src="./assets/audio/bgm.mp3" loop preload="metadata"></audio>
     </div>
 
-    <header class="site-header" aria-label="Primary navigation">
-      <div class="header-row">
-        <a class="hit-area brand reveal" href="#top">STUDIO.DESIGN</a>
-        <nav class="nav-actions" aria-label="Sections">
-          <a class="hit-area reveal" href="#selected-work">Work</a>
-          <a class="hit-area reveal" href="#contact">Contact</a>
-          <button class="hit-area reveal" id="theme-toggle" type="button">THEME[A]</button>
-          <button class="hit-area reveal" id="sound-toggle" type="button">SOUND[|]</button>
-        </nav>
-      </div>
-      <div class="header-row header-row--bottom">
-        <span class="hit-area reveal" id="clock">GMT+8 CN --:--</span>
-        <span class="hit-area reveal pointer-readout" id="pointer">0001 X 0001 Y</span>
-      </div>
-    </header>
-
-    <main id="top" class="scroll-shell">
-      <section class="hero section-pad">
-        <div class="hero__intro grid-12">
-          <p class="kicker reveal">Design &amp;<br />Engineering</p>
-          <p class="aside-copy reveal">Thinking in systems. Designing with care.</p>
-          <p class="bio reveal">
-            I am a design engineer exploring product craft, AI workflows, and tools that help
-            teams move from idea to durable interface.
-          </p>
-        </div>
-        <h1 class="hero-title">
-          <span class="reveal">I bring</span>
-          <span class="reveal">craft &amp; taste</span>
-          <span class="reveal">to digital work</span>
-        </h1>
-      </section>
-
-      <section class="manifesto section-pad grid-12">
-        <div class="signature" aria-hidden="true">
-          <svg viewBox="0 0 320 154" role="img">
-            <path d="M34 119C68 54 102 31 122 49c15 14-8 49-28 48-18-1-15-29 4-41 39-26 83 35 123-3 24-22 40-38 65-26" />
-            <path d="M54 92c39-26 90-39 151-39 31 0 61 5 92 16" />
-            <path d="M216 44c-15 30-23 55-22 75 2 25 35-20 58-60" />
-          </svg>
-        </div>
-        <div class="manifesto__copy">
-          <p class="large-copy reveal">
-            I explore how to shape AI-era workflows with craft and taste, building the next
-            generation of digital products.
-          </p>
-          <p class="large-copy muted reveal">
-            The practice spans prototypes, systems, coding projects, collaboration rituals, and
-            the quiet details that make software feel considered.
-          </p>
-        </div>
-      </section>
-
-      <section id="selected-work" class="work section-pad">
-        <div class="work-grid">
-          <article class="work-card work-card--wide reveal">
-            <a href="#" aria-label="Reunimos study project">
-              <div class="thumb"><span>Coding Project</span></div>
-              <div class="work-meta"><strong>Reunimos Study</strong><span>2024-2026</span></div>
-            </a>
-          </article>
-          <article class="work-card work-card--left reveal">
-            <a href="#" aria-label="Inspire Mono study project">
-              <div class="thumb"><span>Coding Project</span></div>
-              <div class="work-meta"><strong>Inspire Mono</strong><span>2025</span></div>
-            </a>
-          </article>
-          <article class="work-card reveal">
-            <a href="#" aria-label="Wasm design utils study project">
-              <div class="thumb"><span>Coding Project</span></div>
-              <div class="work-meta"><strong>Wasm Design Utils</strong><span>2025</span></div>
-            </a>
-          </article>
-          <article class="work-card work-card--small reveal">
-            <a href="#" aria-label="Vector symbols study project">
-              <div class="thumb"><span>Coding Project</span></div>
-              <div class="work-meta"><strong>VectorSymbols</strong><span>2023 ↗</span></div>
-            </a>
-          </article>
-          <article class="work-card work-card--small reveal">
-            <a href="#" aria-label="Dark side study project">
-              <div class="thumb"><span>Coding Project</span></div>
-              <div class="work-meta"><strong>DarkSide</strong><span>2021 ↗</span></div>
-            </a>
-          </article>
-          <article class="work-card work-card--small reveal">
-            <a href="#" aria-label="Cloud drive study project">
-              <div class="thumb thumb--quiet"></div>
-              <div class="work-meta"><strong>Cloud Drive</strong><span>2020-2022</span></div>
-            </a>
-          </article>
-          <article class="work-card work-card--small reveal">
-            <a href="#" aria-label="Shore icon study project">
-              <div class="thumb thumb--quiet"></div>
-              <div class="work-meta"><strong>Shore Icon</strong><span>2022</span></div>
-            </a>
-          </article>
-          <article class="work-card work-card--small reveal">
-            <a href="#" aria-label="Collaboration platform study project">
-              <div class="thumb thumb--quiet"></div>
-              <div class="work-meta"><strong>Team Space</strong><span>2018-2020</span></div>
-            </a>
-          </article>
-        </div>
-      </section>
-
-      <section class="purpose section-pad" aria-hidden="true">
-        <p><span class="reveal">Innovate</span><span class="reveal">with</span><span class="reveal">purpose</span></p>
-      </section>
-
-      <footer id="contact" class="contact section-pad">
-        <div class="contact-title" aria-label="Contact">
-          <div><span class="reveal">Let's</span><span class="reveal align-right">Create</span></div>
-          <div><span class="reveal">Something</span></div>
-          <div><span class="reveal align-right">Extraordinary</span></div>
-        </div>
-        <div class="contact-links">
-          <a class="hit-area reveal" href="mailto:hello@example.com">hello@example.com</a>
-          <div>
-            <a class="hit-area reveal" href="#">Twitter/X</a>
-            <a class="hit-area reveal" href="#">Figma</a>
-            <a class="hit-area reveal" href="#">GitHub</a>
-          </div>
-        </div>
-      </footer>
-    </main>
-
+    <noscript>This portfolio needs JavaScript for its WebGL and scroll interactions.</noscript>
     <script type="module" src="./scripts/main.js"></script>
   </body>
 </html>
