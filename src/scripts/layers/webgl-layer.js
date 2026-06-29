@@ -624,16 +624,16 @@ export function createWebglLayer({ canvas, state, onProgress }) {
     dust.rotation.y += delta * (0.05 + Math.abs(state.velocity) * 0.005);
     dust.rotation.z = state.time * 0.00003;
 
-    const targetCameraX = isMobile ? 0 : -state.pointer.nx * 0.78;
-    const targetCameraY = isMobile ? 0 : -state.pointer.ny * 0.42;
-    camera.position.x = damp(camera.position.x, targetCameraX, 4.8, delta);
-    camera.position.y = damp(camera.position.y, targetCameraY, 4.8, delta);
+    const targetCameraX = isMobile ? 0 : -state.pointer.nx * 0.92;
+    const targetCameraY = isMobile ? 0 : -state.pointer.ny * 0.54;
+    camera.position.x = damp(camera.position.x, targetCameraX, 7.4, delta);
+    camera.position.y = damp(camera.position.y, targetCameraY, 7.4, delta);
     camera.lookAt(0, 0, 0);
     updateHeroGlassBounds(heroOpacity);
 
-    pointerLight.position.x = state.pointer.nx * 10;
-    pointerLight.position.y = state.pointer.ny * 6;
-    pointerLight.intensity = 145 + state.pointer.speed * 250 + Math.abs(state.velocity) * 7;
+    pointerLight.position.x = state.pointer.nx * 11.5;
+    pointerLight.position.y = state.pointer.ny * 7.2;
+    pointerLight.intensity = 155 + state.pointer.speed * 310 + Math.abs(state.velocity) * 8;
     cyan.position.x = 9 + Math.sin(state.time * 0.0007) * 3;
     magenta.position.y = -6 + Math.cos(state.time * 0.0006) * 3;
 

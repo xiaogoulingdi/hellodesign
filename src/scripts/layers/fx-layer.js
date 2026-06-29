@@ -26,7 +26,7 @@ export function createFxLayer({ canvas, state }) {
     const cell = `${Math.floor(state.pointer.x / 16)}:${Math.floor(state.pointer.y / 16)}`;
     if (cell !== lastCell) {
       const distance = Math.hypot(state.pointer.x - lastTrailX, state.pointer.y - lastTrailY);
-      const samples = Math.min(5, Math.max(1, Math.ceil(distance / 34)));
+      const samples = Math.min(6, Math.max(1, Math.ceil(distance / 26)));
       for (let sample = 0; sample < samples; sample += 1) {
         for (let index = trail.length - 1; index > 0; index -= 1) {
           trail[index].x = trail[index - 1].x;
@@ -38,7 +38,7 @@ export function createFxLayer({ canvas, state }) {
         trail[0].x = lerp(lastTrailX, state.pointer.x, t);
         trail[0].y = lerp(lastTrailY, state.pointer.y, t);
         trail[0].strength = 1 - sample * 0.08;
-        trail[0].speed = clamp(state.pointer.speed + distance / 420);
+        trail[0].speed = clamp(state.pointer.speed + distance / 320);
       }
       lastTrailX = state.pointer.x;
       lastTrailY = state.pointer.y;
@@ -69,7 +69,7 @@ export function createFxLayer({ canvas, state }) {
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, w, h);
 
-    const visibleBlocks = Math.round(lerp(5, 13, clamp(state.pointer.speed * 1.25)));
+    const visibleBlocks = Math.round(lerp(5, 14, clamp(state.pointer.speed * 1.45)));
     for (let index = 0; index < visibleBlocks; index += 1) {
       const point = trail[index];
       if (point.strength < 0.03) continue;

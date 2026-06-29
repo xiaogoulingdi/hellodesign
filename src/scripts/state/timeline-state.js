@@ -38,15 +38,16 @@ export function createTimelineState({ totalScroll }) {
     addScroll(deltaY) {
       const normalized = deltaY / Math.max(window.innerHeight, 540);
       this.direction = Math.sign(deltaY) || this.direction;
-      const speed = Math.min(1.18, Math.max(0.56, Math.abs(normalized) * 2.8));
-      this.setTarget(this.target + normalized * 0.82 * speed);
+      const earlyBoost = this.position < 3.35 ? 1.34 : 1;
+      const speed = Math.min(1.42, Math.max(0.68, Math.abs(normalized) * 3.35));
+      this.setTarget(this.target + normalized * 0.9 * speed * earlyBoost);
     },
     setPointer(x, y, movement = 0) {
       this.pointer.x = x;
       this.pointer.y = y;
       this.pointer.nx = (x / window.innerWidth) * 2 - 1;
       this.pointer.ny = -((y / window.innerHeight) * 2 - 1);
-      this.pointer.speed = Math.min(1, movement / 42);
+      this.pointer.speed = Math.min(1, movement / 30);
     },
     addRipple(x, y, strength = 1, source = "pointer") {
       this.ripples.push({
@@ -63,14 +64,14 @@ export function createTimelineState({ totalScroll }) {
       this.delta = Math.min(deltaSeconds, 0.05);
       this.position = reducedMotion
         ? this.target
-        : damp(this.position, this.target, 10.8, this.delta);
+        : damp(this.position, this.target, this.position < 3.35 ? 14.2 : 11.8, this.delta);
       this.velocity = damp(
         this.velocity,
         (this.position - lastPosition) / Math.max(this.delta, 0.001),
         8.2,
         this.delta
       );
-      this.pointer.speed = damp(this.pointer.speed, 0, 5, this.delta);
+      this.pointer.speed = damp(this.pointer.speed, 0, 6.8, this.delta);
       this.ripples = this.ripples.filter((ripple) => now - ripple.born < 1800);
       lastPosition = this.position;
     }

@@ -139,17 +139,17 @@ img {
 .hero-curtain::before {
   background:
     radial-gradient(ellipse at calc(var(--pointer-x, 50vw) + 4vw) calc(var(--pointer-y, 50vh) - 8vh), rgba(100, 178, 255, 0.3), transparent 26vw),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 8vw),
-    linear-gradient(90deg, rgba(0, 20, 110, 0.28), transparent 24%, rgba(86, 150, 255, 0.16) 48%, transparent 72%, rgba(0, 0, 50, 0.18));
+    radial-gradient(ellipse at 50% 42%, rgba(70, 126, 255, 0.2), transparent 42vw),
+    linear-gradient(90deg, rgba(0, 20, 110, 0.22), transparent 30%, rgba(86, 150, 255, 0.12) 52%, transparent 76%, rgba(0, 0, 50, 0.14));
   filter: blur(0.4px);
   transform: translate3d(var(--curtain-a-x, 0), var(--curtain-a-y, 0), 0);
 }
 
 .hero-curtain::after {
-  opacity: 0.34;
+  opacity: 0.24;
   background:
-    linear-gradient(115deg, transparent 0 18%, rgba(255, 255, 255, 0.08) 22%, transparent 31% 100%),
-    repeating-linear-gradient(92deg, transparent 0 46px, rgba(0, 0, 0, 0.16) 48px, transparent 78px);
+    radial-gradient(ellipse at 42% 48%, rgba(255, 255, 255, 0.08), transparent 28vw),
+    linear-gradient(115deg, transparent 0 18%, rgba(255, 255, 255, 0.05) 22%, transparent 31% 100%);
   mix-blend-mode: soft-light;
   transform: translate3d(var(--curtain-b-x, 0), 0, 0);
 }
@@ -161,6 +161,7 @@ img {
 
 .grid-overlay {
   z-index: 7;
+  opacity: var(--grid-opacity, 1);
   pointer-events: none;
   background-image:
     linear-gradient(to right, transparent calc(25% - 0.5px), var(--line) calc(25% - 0.5px), var(--line) calc(25% + 0.5px), transparent calc(25% + 0.5px)),

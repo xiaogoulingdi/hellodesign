@@ -55,6 +55,7 @@ export function createSceneLayer({ state }) {
     heroCurtain.style.setProperty("--curtain-a-x", `${(-state.pointer.nx * 10).toFixed(2)}px`);
     heroCurtain.style.setProperty("--curtain-a-y", `${(-state.pointer.ny * 6).toFixed(2)}px`);
     heroCurtain.style.setProperty("--curtain-b-x", `${(state.pointer.nx * 8).toFixed(2)}px`);
+    root.style.setProperty("--grid-opacity", smoothstep(inverseLerp(2.35, 3.35, p)).toFixed(4));
 
     const manifestoOpacity = fadeWindow(p, ...ranges.manifesto, 0.52);
     const manifestoProgress = smoothstep(inverseLerp(ranges.manifesto[0], ranges.manifesto[1], p));
