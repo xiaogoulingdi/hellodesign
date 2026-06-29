@@ -7,6 +7,6 @@ export const siteConfig = {
     manifesto: [1.05, 4.7],
     work: [3.9, 9.15],
     hyper: [9.05, 14.9],
-    contact: [14.1, 17]
+    contact: [14.75, 17]
   }
 };

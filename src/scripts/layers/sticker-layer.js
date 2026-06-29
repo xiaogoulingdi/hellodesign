@@ -1,7 +1,8 @@
 import { stickerConfig } from "../config/stickers.js";
-import { clamp, inverseLerp, lerp, smoothstep } from "../utils/math.js";
+import { clamp, inverseLerp, lerp, seeded, smoothstep } from "../utils/math.js";
 
 export function createStickerLayer({ container, state }) {
+  const bornAt = performance.now();
   const stickers = stickerConfig.map((token) => {
     const image = new Image();
     image.className = "sticker";
@@ -10,7 +11,11 @@ export function createStickerLayer({ container, state }) {
     image.src = token.src;
     image.style.setProperty("--sticker-size", `${token.size}px`);
     container.append(image);
-    return { image, token };
+    return {
+      image,
+      token,
+      rippleCooldown: 0
+    };
   });
 
   const ready = Promise.all(
@@ -21,41 +26,68 @@ export function createStickerLayer({ container, state }) {
 
   function renderSticker(entry, progress, mode) {
     const { image, token } = entry;
-    const local = smoothstep(clamp((progress - token.delay) / Math.max(0.1, 1 - token.delay)));
-    if (local <= 0.001) {
+    const timeProgress = clamp((state.time - bornAt) / 3200);
+    const introProgress = mode === "hero" ? Math.max(progress, timeProgress) : progress;
+    const intro = smoothstep(clamp((introProgress - token.delay) / Math.max(0.1, 1 - token.delay)));
+    const sceneFade = mode === "hero"
+      ? 1 - smoothstep(inverseLerp(2.55, 3.0, state.position))
+      : smoothstep(inverseLerp(14.75, 15.25, state.position));
+    const opacity = clamp(intro * 1.25) * sceneFade;
+    if (opacity <= 0.001) {
       image.style.opacity = "0";
       return;
     }
 
     const w = window.innerWidth;
     const h = window.innerHeight;
-    const xBase = token.x * w - token.size / 2;
-    const drift = token.drift * Math.sin(local * Math.PI);
-    const startY = -token.size * (1.5 + (token.index % 4) * 0.35);
-    const endY = mode === "hero"
-      ? h * (0.22 + ((token.index * 0.19) % 0.62))
-      : h * (0.18 + ((token.index * 0.23) % 0.88));
-    const bob = Math.sin(state.time * 0.0012 + token.index * 1.7) * 9 * local;
-    const x = xBase + drift + Math.sin(state.time * 0.0004 + token.index) * 7;
-    const y = lerp(startY, endY, local) + bob;
-    const rotation = token.rotation + (1 - local) * (token.index % 2 ? -220 : 220);
-    const fadeOut = mode === "hero" ? 1 - smoothstep(inverseLerp(2.35, 2.8, state.position)) : 1;
+    const t = state.time * 0.001;
+    const cycle = mode === "hero"
+      ? 8.4 + seeded(token.index, 10) * 4.2
+      : 7.2 + seeded(token.index, 11) * 4.8;
+    const phase = (t / cycle + token.delay + seeded(token.index, mode === "hero" ? 12 : 13) * 0.72) % 1;
+    const easedFall = phase * phase * (3 - 2 * phase);
+    const startY = -token.size * (1.8 + seeded(token.index, 2) * 1.4);
+    const endY = h + token.size * (1.1 + seeded(token.index, 3));
+    const lane = (token.x + (mode === "contact" ? seeded(token.index, 5) * 0.18 : 0)) % 1;
+    const xBase = lane * w - token.size / 2;
+    const sway = Math.sin(t * (0.82 + seeded(token.index, 8) * 0.54) + token.index * 1.9) * token.drift * 0.56;
+    const flutter = Math.sin(t * (2.1 + seeded(token.index, 9) * 0.8) + token.index) * 13;
+    const y = lerp(startY, endY, easedFall);
+    const x = xBase + sway + flutter;
+
+    const centerX = x + token.size * 0.5;
+    const centerY = y + token.size * 0.5;
+    const dx = centerX - state.pointer.x;
+    const dy = centerY - state.pointer.y;
+    const distance = Math.hypot(dx, dy);
+    const rippleRadius = token.size * 0.72 + 34;
+    entry.rippleCooldown = Math.max(0, entry.rippleCooldown - state.delta);
+    if (distance < rippleRadius && state.pointer.speed > 0.08 && entry.rippleCooldown <= 0) {
+      state.addRipple?.(centerX, centerY, 0.58 + state.pointer.speed * 0.9, "sticker");
+      entry.rippleCooldown = 0.42;
+    }
+
+    const rotation = token.rotation
+      + Math.sin(t * (1.25 + seeded(token.index, 4)) + token.index) * 18
+      + phase * (token.index % 2 ? -96 : 96);
+    const scale = 0.88 + intro * 0.12;
 
     image.style.setProperty("--sticker-x", `${x.toFixed(2)}px`);
     image.style.setProperty("--sticker-y", `${y.toFixed(2)}px`);
     image.style.setProperty("--sticker-r", `${rotation.toFixed(2)}deg`);
-    image.style.opacity = String(clamp(local * 1.35) * fadeOut);
+    image.style.setProperty("--sticker-scale", scale.toFixed(3));
+    image.style.opacity = String(opacity);
   }
 
   function render() {
-    const heroProgress = inverseLerp(0.32, 1.55, state.position);
-    const contactProgress = inverseLerp(14.38, 16.65, state.position);
+    const heroProgress = inverseLerp(0.05, 1.75, state.position);
+    const contactProgress = inverseLerp(14.75, 16.65, state.position);
     const mode = contactProgress > 0 ? "contact" : "hero";
 
     stickers.forEach((entry, index) => {
       const progress = mode === "contact"
         ? contactProgress * entry.token.speed
-        : index < 8
+        : index < 12
           ? heroProgress * entry.token.speed
           : 0;
       renderSticker(entry, progress, mode);

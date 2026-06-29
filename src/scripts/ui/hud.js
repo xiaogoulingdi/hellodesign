@@ -10,6 +10,7 @@ export function initHud({ root, state }) {
   const soundtrack = document.querySelector("#soundtrack");
   const loader = document.querySelector(".loader");
   const loaderValue = document.querySelector(".loader__value");
+  let lastPointerRipple = 0;
 
   const theme = createThemeState({
     root,
@@ -49,6 +50,16 @@ export function initHud({ root, state }) {
     root.style.setProperty("--pointer-x", `${event.clientX}px`);
     root.style.setProperty("--pointer-y", `${event.clientY}px`);
     pointerPixel.hidden = false;
+
+    const overHeroGlass = state.position < 2.9
+      && event.clientX > window.innerWidth * 0.12
+      && event.clientX < window.innerWidth * 0.9
+      && event.clientY > window.innerHeight * 0.22
+      && event.clientY < window.innerHeight * 0.72;
+    if (overHeroGlass && movement > 5 && performance.now() - lastPointerRipple > 110) {
+      state.addRipple?.(event.clientX, event.clientY, Math.min(1.25, 0.52 + movement / 42), "hello");
+      lastPointerRipple = performance.now();
+    }
   });
 
   document.documentElement.addEventListener("mouseleave", () => {

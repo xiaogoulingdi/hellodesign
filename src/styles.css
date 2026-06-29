@@ -572,7 +572,7 @@ img {
   height: var(--sticker-size, 110px);
   object-fit: contain;
   opacity: 0;
-  transform: translate3d(var(--sticker-x, 0), var(--sticker-y, -200px), 0) rotate(var(--sticker-r, 0deg));
+  transform: translate3d(var(--sticker-x, 0), var(--sticker-y, -200px), 0) rotate(var(--sticker-r, 0deg)) scale(var(--sticker-scale, 1));
   filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.18));
   will-change: transform, opacity;
 }

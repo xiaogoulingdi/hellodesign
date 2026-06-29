@@ -67,16 +67,18 @@ export function createSceneLayer({ state }) {
 
     let headlineOpacity = 1;
     let principlesOpacity = 0;
-    if (hyperProgress < 0.26) {
+    if (hyperProgress < 0.22) {
       setHyperText(["INNOVATE", "WITH", "PURPOSE"]);
-    } else if (hyperProgress < 0.48) {
+      headlineOpacity = smoothstep(inverseLerp(0.06, 0.2, hyperProgress));
+    } else if (hyperProgress < 0.58) {
       setHyperText(["INNOVATE", "WITH A", "HUMAN TOUCH"]);
-    } else if (hyperProgress < 0.72) {
-      headlineOpacity = 1 - smoothstep(inverseLerp(0.48, 0.56, hyperProgress));
-      principlesOpacity = smoothstep(inverseLerp(0.51, 0.6, hyperProgress));
+      headlineOpacity = smoothstep(inverseLerp(0.22, 0.34, hyperProgress));
+    } else if (hyperProgress < 0.76) {
+      headlineOpacity = 1 - smoothstep(inverseLerp(0.58, 0.66, hyperProgress));
+      principlesOpacity = smoothstep(inverseLerp(0.62, 0.7, hyperProgress));
     } else {
       setHyperText(["FUTURE-FIRST", "ALWAYS"]);
-      headlineOpacity = smoothstep(inverseLerp(0.72, 0.8, hyperProgress));
+      headlineOpacity = smoothstep(inverseLerp(0.78, 0.86, hyperProgress));
       principlesOpacity = 1 - headlineOpacity;
     }
     hyperHeadline.style.opacity = headlineOpacity.toFixed(3);
