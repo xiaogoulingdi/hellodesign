@@ -3,6 +3,19 @@ import { clamp, inverseLerp, lerp, seeded, smoothstep } from "../utils/math.js";
 
 export function createStickerLayer({ container, state }) {
   const bornAt = performance.now();
+  state.stickers = stickerConfig.map((token) => ({
+    src: token.src,
+    index: token.index,
+    size: token.size,
+    x: 0,
+    y: -token.size * 2,
+    cx: 0,
+    cy: -token.size,
+    rotation: token.rotation,
+    scale: 1,
+    opacity: 0,
+    visible: false
+  }));
   const stickers = stickerConfig.map((token) => {
     const image = new Image();
     image.className = "sticker";
@@ -13,8 +26,7 @@ export function createStickerLayer({ container, state }) {
     container.append(image);
     return {
       image,
-      token,
-      rippleCooldown: 0
+      token
     };
   });
 
@@ -33,8 +45,13 @@ export function createStickerLayer({ container, state }) {
       ? 1 - smoothstep(inverseLerp(2.55, 3.0, state.position))
       : smoothstep(inverseLerp(14.75, 15.25, state.position));
     const opacity = clamp(intro * 1.25) * sceneFade;
+    const shared = state.stickers[token.index];
     if (opacity <= 0.001) {
       image.style.opacity = "0";
+      if (shared) {
+        shared.opacity = 0;
+        shared.visible = false;
+      }
       return;
     }
 
@@ -55,22 +72,21 @@ export function createStickerLayer({ container, state }) {
     const y = lerp(startY, endY, easedFall);
     const x = xBase + sway + flutter;
 
-    const centerX = x + token.size * 0.5;
-    const centerY = y + token.size * 0.5;
-    const dx = centerX - state.pointer.x;
-    const dy = centerY - state.pointer.y;
-    const distance = Math.hypot(dx, dy);
-    const rippleRadius = token.size * 0.72 + 34;
-    entry.rippleCooldown = Math.max(0, entry.rippleCooldown - state.delta);
-    if (distance < rippleRadius && state.pointer.speed > 0.08 && entry.rippleCooldown <= 0) {
-      state.addRipple?.(centerX, centerY, 0.58 + state.pointer.speed * 0.9, "sticker");
-      entry.rippleCooldown = 0.42;
-    }
-
     const rotation = token.rotation
       + Math.sin(t * (1.25 + seeded(token.index, 4)) + token.index) * 18
       + phase * (token.index % 2 ? -96 : 96);
     const scale = 0.88 + intro * 0.12;
+
+    if (shared) {
+      shared.x = x;
+      shared.y = y;
+      shared.cx = x + token.size * scale * 0.5;
+      shared.cy = y + token.size * scale * 0.5;
+      shared.rotation = rotation;
+      shared.scale = scale;
+      shared.opacity = opacity;
+      shared.visible = true;
+    }
 
     image.style.setProperty("--sticker-x", `${x.toFixed(2)}px`);
     image.style.setProperty("--sticker-y", `${y.toFixed(2)}px`);

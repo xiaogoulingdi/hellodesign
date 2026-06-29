@@ -40,9 +40,9 @@ function frame(now) {
   previous = now;
   state.update(now, deltaSeconds);
   sceneLayer.render();
-  fxLayer.render();
-  webglLayer.render();
   stickerLayer.render();
+  webglLayer.render();
+  fxLayer.render();
   requestAnimationFrame(frame);
 }
 

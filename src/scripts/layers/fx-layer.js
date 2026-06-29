@@ -89,47 +89,58 @@ export function createFxLayer({ canvas, state }) {
     if (!state.ripples?.length) return;
 
     ctx.save();
-    ctx.globalCompositeOperation = dark ? "screen" : "multiply";
+    ctx.globalCompositeOperation = dark ? "screen" : "source-over";
     for (const ripple of state.ripples) {
       const age = (now - ripple.born) / 1000;
-      if (age < 0 || age > 1.8) continue;
+      if (age < 0 || age > 1.18) continue;
       const life = 1 - age / 1.8;
-      const strength = ripple.strength * life;
-      const radius = 18 + age * (ripple.source === "hello" ? 210 : 145);
-      const rings = ripple.source === "hello" ? 4 : 3;
+      const strength = ripple.strength * life * (ripple.source === "hello" ? 0.52 : 0.18);
+      if (strength <= 0.01) continue;
+      const glass = state.heroGlass;
+      if (ripple.source === "hello" && (!glass?.visible || glass.opacity <= 0.01)) continue;
 
-      for (let ring = 0; ring < rings; ring += 1) {
-        const r = radius + ring * 18;
-        const alpha = strength * (0.32 - ring * 0.055);
-        if (alpha <= 0) continue;
-        ctx.lineWidth = Math.max(1, 2.4 - ring * 0.28);
-        ctx.strokeStyle = dark
-          ? rgba(ripple.source === "hello" ? "166,238,255" : "192,254,4", alpha)
-          : rgba(ripple.source === "hello" ? "12,80,220" : "0,80,255", alpha * 0.72);
-        ctx.beginPath();
-        for (let step = 0; step <= 96; step += 1) {
-          const a = (step / 96) * Math.PI * 2;
-          const wobble = Math.sin(a * 9 + age * 15 + ring) * (3.5 + ripple.strength * 3);
-          const x = ripple.x + Math.cos(a) * (r + wobble);
-          const y = ripple.y + Math.sin(a) * (r + wobble * 0.74);
-          if (step === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+      const count = ripple.source === "hello" ? 42 : 18;
+      const spreadX = ripple.source === "hello" ? glass.width * 0.42 : 90;
+      const spreadY = ripple.source === "hello" ? glass.height * 0.42 : 70;
+      const baseAlpha = dark ? 0.18 : 0.1;
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = dark
+        ? rgba("170,240,255", strength * baseAlpha)
+        : rgba("18,70,190", strength * baseAlpha * 0.72);
+      ctx.fillStyle = dark
+        ? rgba("190,250,255", strength * 0.22)
+        : rgba("12,70,220", strength * 0.11);
+      for (let index = 0; index < count; index += 1) {
+        const seed = index + (ripple.source === "hello" ? 100 : 400);
+        const angle = seeded(seed, 1) * Math.PI * 2;
+        const drift = age * (26 + seeded(seed, 2) * 64);
+        const orbit = 0.18 + seeded(seed, 3) * 0.82;
+        const smoke = Math.sin(age * 7.5 + seeded(seed, 4) * 9.0);
+        const x = ripple.x + Math.cos(angle) * spreadX * orbit + smoke * 14 + drift * Math.cos(angle + 0.8);
+        const y = ripple.y + Math.sin(angle) * spreadY * orbit * 0.72 + smoke * 7 + drift * Math.sin(angle - 0.4) * 0.42;
+        const clipPad = 54;
+        if (ripple.source === "hello") {
+          if (
+            x < glass.x - clipPad
+            || x > glass.x + glass.width + clipPad
+            || y < glass.y - clipPad
+            || y > glass.y + glass.height + clipPad
+          ) continue;
         }
-        ctx.stroke();
-      }
-
-      if (ripple.source === "hello") {
-        ctx.globalAlpha = strength * 0.16;
-        ctx.fillStyle = dark ? "#bff7ff" : "#1b4dff";
-        for (let index = 0; index < 34; index += 1) {
-          const angle = seeded(index, 21) * Math.PI * 2;
-          const d = radius * (0.22 + seeded(index, 22) * 0.68);
-          const x = Math.floor((ripple.x + Math.cos(angle) * d) / 8) * 8;
-          const y = Math.floor((ripple.y + Math.sin(angle) * d * 0.72) / 8) * 8;
-          ctx.fillRect(x, y, 2, 2);
+        if (index % 3 === 0) {
+          const length = 8 + seeded(seed, 5) * 26;
+          ctx.globalAlpha = strength * (0.12 + seeded(seed, 6) * 0.18);
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + Math.cos(angle + smoke) * length, y + Math.sin(angle + smoke) * length * 0.54);
+          ctx.stroke();
+        } else {
+          const size = 1 + seeded(seed, 7) * 2;
+          ctx.globalAlpha = strength * (0.1 + seeded(seed, 8) * 0.18);
+          ctx.fillRect(Math.floor(x / 3) * 3, Math.floor(y / 3) * 3, size, size);
         }
-        ctx.globalAlpha = 1;
       }
+      ctx.globalAlpha = 1;
     }
     ctx.restore();
   }

@@ -21,6 +21,7 @@ export function createSceneLayer({ state }) {
     [...document.querySelectorAll("[data-scene]")].map((element) => [element.dataset.scene, element])
   );
   const workGrid = document.querySelector(".work-grid");
+  const heroCurtain = document.querySelector(".hero-curtain");
   const hyperHeadline = document.querySelector(".hyper-headline");
   const principles = document.querySelector(".principles");
   const signature = document.querySelector(".signature");
@@ -50,6 +51,10 @@ export function createSceneLayer({ state }) {
 
     const heroOpacity = 1 - smoothstep(inverseLerp(0.82, 1.58, p));
     setSceneState(scenes.hero, heroOpacity, lerp(0, -80, smoothstep(p / ranges.hero[1])));
+    heroCurtain.style.setProperty("--curtain-opacity", (heroOpacity * 0.92).toFixed(4));
+    heroCurtain.style.setProperty("--curtain-a-x", `${(-state.pointer.nx * 10).toFixed(2)}px`);
+    heroCurtain.style.setProperty("--curtain-a-y", `${(-state.pointer.ny * 6).toFixed(2)}px`);
+    heroCurtain.style.setProperty("--curtain-b-x", `${(state.pointer.nx * 8).toFixed(2)}px`);
 
     const manifestoOpacity = fadeWindow(p, ...ranges.manifesto, 0.52);
     const manifestoProgress = smoothstep(inverseLerp(ranges.manifesto[0], ranges.manifesto[1], p));
@@ -63,7 +68,23 @@ export function createSceneLayer({ state }) {
 
     const hyperOpacity = fadeWindow(p, ...ranges.hyper, 0.48);
     const hyperProgress = inverseLerp(ranges.hyper[0], ranges.hyper[1], p);
+    const hyperReveal = smoothstep(inverseLerp(0.08, 0.34, hyperProgress));
+    const hyperHide = smoothstep(inverseLerp(0.62, 0.74, hyperProgress));
+    const revealRadius = lerp(8, 88, hyperReveal) * (1 - hyperHide) + 120 * hyperHide;
+    const revealX = lerp(40, 50, hyperReveal);
+    const revealY = lerp(56, 50, hyperReveal);
+    const revealGlow = hyperReveal * (1 - smoothstep(inverseLerp(0.52, 0.72, hyperProgress))) * 0.42;
+    const revealCursor = (1 - hyperReveal) * hyperOpacity * 0.72;
+    const revealCursorSize = lerp(48, 150, hyperReveal);
     setSceneState(scenes.hyper, hyperOpacity, 0, lerp(0.97, 1, hyperOpacity));
+    scenes.hyper.style.setProperty("--hyper-reveal", hyperReveal.toFixed(4));
+    scenes.hyper.style.setProperty("--hyper-reveal-x", `${revealX.toFixed(2)}%`);
+    scenes.hyper.style.setProperty("--hyper-reveal-y", `${revealY.toFixed(2)}%`);
+    scenes.hyper.style.setProperty("--hyper-reveal-radius", `${revealRadius.toFixed(2)}vmax`);
+    scenes.hyper.style.setProperty("--hyper-reveal-glow", revealGlow.toFixed(4));
+    scenes.hyper.style.setProperty("--hyper-cursor-opacity", revealCursor.toFixed(4));
+    scenes.hyper.style.setProperty("--hyper-cursor-size", `${revealCursorSize.toFixed(2)}px`);
+    scenes.hyper.classList.toggle("is-revealing", hyperProgress < 0.68 && hyperOpacity > 0.01);
 
     let headlineOpacity = 1;
     let principlesOpacity = 0;

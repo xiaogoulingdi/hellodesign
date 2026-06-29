@@ -20,6 +20,17 @@ export function createTimelineState({ totalScroll }) {
       ny: 0,
       speed: 0
     },
+    heroGlass: {
+      visible: false,
+      opacity: 0,
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+      cx: window.innerWidth / 2,
+      cy: window.innerHeight / 2
+    },
+    stickers: [],
     ripples: [],
     setTarget(value) {
       this.target = clamp(value, 0, totalScroll);

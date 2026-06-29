@@ -51,11 +51,14 @@ export function initHud({ root, state }) {
     root.style.setProperty("--pointer-y", `${event.clientY}px`);
     pointerPixel.hidden = false;
 
+    const glass = state.heroGlass;
+    const pad = Math.min(window.innerWidth, window.innerHeight) * 0.08;
     const overHeroGlass = state.position < 2.9
-      && event.clientX > window.innerWidth * 0.12
-      && event.clientX < window.innerWidth * 0.9
-      && event.clientY > window.innerHeight * 0.22
-      && event.clientY < window.innerHeight * 0.72;
+      && glass?.visible
+      && event.clientX > glass.x - pad
+      && event.clientX < glass.x + glass.width + pad
+      && event.clientY > glass.y - pad
+      && event.clientY < glass.y + glass.height + pad;
     if (overHeroGlass && movement > 5 && performance.now() - lastPointerRipple > 110) {
       state.addRipple?.(event.clientX, event.clientY, Math.min(1.25, 0.52 + movement / 42), "hello");
       lastPointerRipple = performance.now();

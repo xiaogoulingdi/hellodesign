@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { stickerConfig } from "../config/stickers.js";
 import { clamp, damp, inverseLerp, lerp, seeded, smoothstep } from "../utils/math.js";
 
 const modelUrls = {
@@ -14,7 +15,7 @@ function degrees(value) {
 
 function createRefractionBackground() {
   const scene = new THREE.Scene();
-  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -10, 10);
   const material = new THREE.ShaderMaterial({
     depthWrite: false,
     depthTest: false,
@@ -22,6 +23,7 @@ function createRefractionBackground() {
       uResolution: { value: new THREE.Vector2(1, 1) },
       uTime: { value: 0 },
       uPointer: { value: new THREE.Vector2(0.5, 0.5) },
+      uPointerSpeed: { value: 0 },
       uScroll: { value: 0 },
       uDark: { value: 1 }
     },
@@ -39,32 +41,64 @@ function createRefractionBackground() {
       uniform vec2 uResolution;
       uniform vec2 uPointer;
       uniform float uTime;
+      uniform float uPointerSpeed;
       uniform float uScroll;
       uniform float uDark;
       varying vec2 vUv;
 
-      float lineGrid(vec2 uv, float scale, float width) {
-        vec2 g = abs(fract(uv * scale - 0.5) - 0.5) / fwidth(uv * scale);
-        float line = min(g.x, g.y);
-        return 1.0 - min(line / width, 1.0);
+      float hash(vec2 p) {
+        p = fract(p * vec2(123.34, 456.21));
+        p += dot(p, p + 45.32);
+        return fract(p.x * p.y);
       }
 
-      float dots(vec2 uv) {
-        vec2 grid = fract(uv * 84.0) - 0.5;
-        float d = length(grid);
-        return smoothstep(0.055, 0.015, d);
+      float noise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        float a = hash(i);
+        float b = hash(i + vec2(1.0, 0.0));
+        float c = hash(i + vec2(0.0, 1.0));
+        float d = hash(i + vec2(1.0, 1.0));
+        return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+      }
+
+      float fbm(vec2 p) {
+        float value = 0.0;
+        float amp = 0.5;
+        for (int i = 0; i < 4; i++) {
+          value += noise(p) * amp;
+          p *= 2.03;
+          amp *= 0.5;
+        }
+        return value;
       }
 
       void main() {
         vec2 uv = vUv;
+        float t = uTime * 0.001;
+        float aspect = uResolution.x / max(uResolution.y, 1.0);
         vec2 centered = uv - 0.5;
-        centered.x *= uResolution.x / max(uResolution.y, 1.0);
+        centered.x *= aspect;
+        vec2 pointerDelta = uv - uPointer;
+        pointerDelta.x *= aspect;
 
-        float radial = 1.0 - smoothstep(0.05, 0.92, length(centered));
-        float wave = sin((uv.x * 7.0 + uv.y * 4.0 + uTime * 0.00045) * 6.28318) * 0.5 + 0.5;
-        float grid = lineGrid(uv + vec2(uScroll * 0.018, -uScroll * 0.011), 4.0, 0.8);
-        float micro = dots(uv + vec2(sin(uTime * 0.0002) * 0.01, cos(uTime * 0.00017) * 0.01));
+        float radial = 1.0 - smoothstep(0.08, 0.9, length(centered));
         float pointerGlow = 1.0 - smoothstep(0.0, 0.55, distance(uv, uPointer));
+        float pointerWake = (1.0 - smoothstep(0.0, 0.64, length(pointerDelta))) * (0.18 + uPointerSpeed * 0.56);
+        vec2 curtainUv = uv;
+        curtainUv.x += sin(uv.y * 8.0 + t * 0.52) * 0.006;
+        curtainUv.x += sin(uv.y * 18.0 - t * 0.31) * 0.003;
+        curtainUv += normalize(pointerDelta + 0.0001) * pointerWake * 0.014;
+
+        float foldA = sin(curtainUv.x * 24.0 + sin(curtainUv.y * 6.0 + t * 0.18) * 1.7);
+        float foldB = sin(curtainUv.x * 55.0 - curtainUv.y * 7.5 + t * 0.22);
+        float folds = foldA * 0.58 + foldB * 0.22;
+        float fabric = fbm(curtainUv * vec2(4.2, 2.5) + vec2(t * 0.035, -t * 0.018));
+        float veil = (1.0 - smoothstep(0.18, 0.92, abs(centered.x))) * (1.0 - smoothstep(0.05, 0.88, abs(centered.y)));
+        float highlight = smoothstep(0.2, 1.0, folds * 0.5 + 0.5) * veil;
+        float shadow = smoothstep(0.18, 0.86, -folds * 0.5 + 0.5) * veil;
+        float scan = sin((uv.y + uScroll * 0.012) * 68.0 + fabric * 2.1) * 0.5 + 0.5;
 
         vec3 deep = mix(vec3(0.015, 0.025, 0.075), vec3(0.72, 0.77, 0.92), 1.0 - uDark);
         vec3 blue = mix(vec3(0.02, 0.13, 0.62), vec3(0.23, 0.34, 0.9), 1.0 - uDark);
@@ -72,17 +106,44 @@ function createRefractionBackground() {
         vec3 violet = vec3(0.72, 0.22, 1.0);
 
         vec3 color = deep;
-        color += blue * (0.32 + radial * 0.62);
-        color += cyan * grid * 0.045;
-        color += mix(cyan, violet, wave) * micro * (uDark > 0.5 ? 0.075 : 0.035);
-        color += vec3(0.45, 0.66, 1.0) * pointerGlow * 0.2;
+        color += blue * (0.2 + radial * 0.58 + veil * 0.1);
+        color += mix(cyan, violet, fabric) * highlight * (uDark > 0.5 ? 0.085 : 0.045);
+        color -= vec3(0.0, 0.03, 0.12) * shadow * (uDark > 0.5 ? 0.18 : 0.06);
+        color += vec3(0.28, 0.52, 1.0) * scan * veil * 0.025;
+        color += vec3(0.45, 0.66, 1.0) * pointerGlow * pointerWake * 0.18;
 
         gl_FragColor = vec4(color, 1.0);
       }
     `
   });
-  scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
-  return { scene, camera, material };
+  const plane = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+  plane.renderOrder = 0;
+  scene.add(plane);
+
+  const textureLoader = new THREE.TextureLoader();
+  const stickers = stickerConfig.map((token) => {
+    const texture = textureLoader.load(token.src, (loadedTexture) => {
+      loadedTexture.colorSpace = THREE.SRGBColorSpace;
+      loadedTexture.needsUpdate = true;
+    });
+    texture.colorSpace = THREE.SRGBColorSpace;
+    const spriteMaterial = new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      depthTest: false,
+      toneMapped: false
+    });
+    const sprite = new THREE.Sprite(spriteMaterial);
+    sprite.renderOrder = 2;
+    sprite.frustumCulled = false;
+    sprite.userData.index = token.index;
+    scene.add(sprite);
+    return sprite;
+  });
+
+  return { scene, camera, material, stickers };
 }
 
 function createGlassMaterial(texture, options = {}) {
@@ -148,6 +209,34 @@ function createGlassMaterial(texture, options = {}) {
       varying vec3 vWorldNormal;
       varying vec3 vViewNormal;
 
+      float hash(vec2 p) {
+        p = fract(p * vec2(123.34, 456.21));
+        p += dot(p, p + 45.32);
+        return fract(p.x * p.y);
+      }
+
+      float noise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        float a = hash(i);
+        float b = hash(i + vec2(1.0, 0.0));
+        float c = hash(i + vec2(0.0, 1.0));
+        float d = hash(i + vec2(1.0, 1.0));
+        return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+      }
+
+      float fbm(vec2 p) {
+        float value = 0.0;
+        float amp = 0.5;
+        for (int i = 0; i < 4; i++) {
+          value += noise(p) * amp;
+          p = mat2(1.62, 1.18, -1.18, 1.62) * p;
+          amp *= 0.5;
+        }
+        return value;
+      }
+
       vec3 sampleDispersion(vec2 uv, vec2 bend, float split) {
         vec2 safeUv = clamp(uv, 0.002, 0.998);
         vec3 a = texture2D(uSceneTexture, clamp(safeUv + bend * 0.55, 0.002, 0.998)).rgb;
@@ -164,22 +253,29 @@ function createGlassMaterial(texture, options = {}) {
         vec2 pointerDelta = screenUv - uPointer;
         pointerDelta.x *= uResolution.x / max(uResolution.y, 1.0);
         float pointerDistance = length(pointerDelta);
-        float hover = smoothstep(0.52, 0.035, pointerDistance) * uRippleStrength;
-        float waveRaw = sin(pointerDistance * 118.0 - uTime * 0.018);
-        float ripple = waveRaw * 0.5 + 0.5;
-        float fineRipple = sin(pointerDistance * 230.0 + vWorldPosition.y * 2.2 - uTime * 0.026) * 0.5 + 0.5;
-        float rippleMask = hover * (0.32 + uPointerSpeed * 1.25);
+        float hover = (1.0 - smoothstep(0.035, 0.36, pointerDistance)) * uRippleStrength;
+        vec2 smokeUv = vec2(vWorldPosition.x * 0.18, vWorldPosition.y * 0.26);
+        smokeUv += normalize(pointerDelta + 0.0001) * hover * (0.8 + uPointerSpeed * 1.9);
+        smokeUv += vec2(uTime * 0.00028, -uTime * 0.00019);
+        float smokeA = fbm(smokeUv * 3.2);
+        float smokeB = fbm(smokeUv * 6.4 + 7.1);
+        float smoke = (smokeA * 0.72 + smokeB * 0.28 - 0.48) * 2.0;
+        float rippleMask = hover * (0.16 + uPointerSpeed * 0.78);
+        vec2 smokeFlow = vec2(
+          fbm(smokeUv * 4.5 + 19.0) - 0.5,
+          fbm(smokeUv * 4.5 - 11.0) - 0.5
+        );
 
         float fresnel = pow(1.0 - clamp(dot(viewDir, normal), 0.0, 1.0), uFresnelPower);
         float tube = pow(abs(viewNormal.z), 0.32);
-        vec2 rippleNormal = normalize(pointerDelta + 0.0001) * waveRaw * rippleMask;
-        vec2 normalBend = viewNormal.xy * (0.38 + fresnel * 1.35) + rippleNormal * 0.86;
+        vec2 rippleNormal = smokeFlow * rippleMask + normalize(pointerDelta + 0.0001) * smoke * rippleMask * 0.18;
+        vec2 normalBend = viewNormal.xy * (0.38 + fresnel * 1.35) + rippleNormal;
         vec3 rVec = refract(-viewDir, normal, 1.0 / uIorR);
         vec3 gVec = refract(-viewDir, normal, 1.0 / uIorG);
         vec3 bVec = refract(-viewDir, normal, 1.0 / uIorB);
         vec2 bend = (normalBend + rVec.xy + gVec.xy * 0.55 + bVec.xy * 0.28) * uRefractPower;
         vec2 tangent = normalize(vec2(-bend.y, bend.x) + 0.0001);
-        float split = uChromaticAberration * (0.45 + fresnel * 2.2 + rippleMask * 2.3);
+        float split = uChromaticAberration * (0.45 + fresnel * 2.2 + rippleMask * 0.9);
 
         vec3 refracted = vec3(
           sampleDispersion(screenUv, bend + tangent * split, split).r,
@@ -194,19 +290,19 @@ function createGlassMaterial(texture, options = {}) {
         float specA = pow(max(dot(normal, halfA), 0.0), 92.0);
         float specB = pow(max(dot(normal, halfB), 0.0), 42.0);
         float sweep = pow(max(0.0, sin(vWorldPosition.x * 0.85 + vWorldPosition.y * 0.34 + uTime * 0.0011)), 8.0);
-        float rippleSpec = pow(ripple, 3.0) * fineRipple * rippleMask;
-        float rippleShadow = (1.0 - ripple) * rippleMask * 0.18;
+        float smokeSpec = smoothstep(0.12, 0.84, smokeA) * (1.0 - smoothstep(0.12, 0.64, smokeB)) * rippleMask;
+        float smokeShadow = smoothstep(0.2, 0.88, -smoke) * rippleMask * 0.09;
 
-        vec3 body = mix(refracted, uBaseColor, 0.74 + tube * 0.14);
+        vec3 body = mix(refracted, uBaseColor, 0.66 + tube * 0.12);
         body += uRimColor * fresnel * 0.9;
         body += vec3(1.0, 0.96, 0.92) * specA * 1.25;
         body += vec3(0.2, 0.95, 1.0) * specB * 0.65;
         body += vec3(0.8, 0.95, 1.0) * sweep * 0.12;
-        body += vec3(0.72, 0.95, 1.0) * rippleSpec * 0.88;
-        body -= vec3(0.02, 0.05, 0.16) * rippleShadow;
+        body += vec3(0.72, 0.95, 1.0) * smokeSpec * 0.38;
+        body -= vec3(0.02, 0.05, 0.16) * smokeShadow;
         body = pow(body, vec3(0.92));
 
-        float alpha = uOpacity * mix(0.78, 0.98, clamp(fresnel + tube * 0.48, 0.0, 1.0));
+        float alpha = uOpacity * mix(0.7, 0.95, clamp(fresnel + tube * 0.5, 0.0, 1.0));
         gl_FragColor = vec4(body, alpha);
       }
     `
@@ -294,6 +390,8 @@ export function createWebglLayer({ canvas, state, onProgress }) {
   });
   refractionTarget.texture.name = "liquid-glass-refraction";
   const refractionBackground = createRefractionBackground();
+  const boundsBox = new THREE.Box3();
+  const boundsCorners = Array.from({ length: 8 }, () => new THREE.Vector3());
 
   const ambient = new THREE.HemisphereLight(0xb7c7ff, 0x02051c, 1.25);
   const key = new THREE.PointLight(0xffffff, 190, 80, 1.6);
@@ -392,6 +490,76 @@ export function createWebglLayer({ canvas, state, onProgress }) {
     camera.updateProjectionMatrix();
   }
 
+  function updateHeroGlassBounds(opacity) {
+    const target = state.heroGlass;
+    if (!target || opacity <= 0.002 || !modelState.hello.model) {
+      if (target) {
+        target.visible = false;
+        target.opacity = 0;
+      }
+      return;
+    }
+
+    helloGroup.updateMatrixWorld(true);
+    camera.updateMatrixWorld(true);
+    boundsBox.setFromObject(helloGroup);
+    if (boundsBox.isEmpty()) return;
+
+    const min = boundsBox.min;
+    const max = boundsBox.max;
+    boundsCorners[0].set(min.x, min.y, min.z);
+    boundsCorners[1].set(min.x, min.y, max.z);
+    boundsCorners[2].set(min.x, max.y, min.z);
+    boundsCorners[3].set(min.x, max.y, max.z);
+    boundsCorners[4].set(max.x, min.y, min.z);
+    boundsCorners[5].set(max.x, min.y, max.z);
+    boundsCorners[6].set(max.x, max.y, min.z);
+    boundsCorners[7].set(max.x, max.y, max.z);
+
+    let left = Infinity;
+    let right = -Infinity;
+    let top = Infinity;
+    let bottom = -Infinity;
+    for (const corner of boundsCorners) {
+      corner.project(camera);
+      const x = (corner.x * 0.5 + 0.5) * window.innerWidth;
+      const y = (-corner.y * 0.5 + 0.5) * window.innerHeight;
+      left = Math.min(left, x);
+      right = Math.max(right, x);
+      top = Math.min(top, y);
+      bottom = Math.max(bottom, y);
+    }
+
+    target.visible = true;
+    target.opacity = opacity;
+    target.x = left;
+    target.y = top;
+    target.width = Math.max(1, right - left);
+    target.height = Math.max(1, bottom - top);
+    target.cx = (left + right) * 0.5;
+    target.cy = (top + bottom) * 0.5;
+  }
+
+  function updateRefractionSprites() {
+    const w = Math.max(window.innerWidth, 1);
+    const h = Math.max(window.innerHeight, 1);
+    for (const sprite of refractionBackground.stickers) {
+      const sticker = state.stickers?.[sprite.userData.index];
+      const material = sprite.material;
+      if (!sticker?.visible || sticker.opacity <= 0.002) {
+        material.opacity = 0;
+        sprite.visible = false;
+        continue;
+      }
+      sprite.visible = true;
+      material.opacity = clamp(sticker.opacity * 0.86);
+      sprite.position.set((sticker.cx / w) * 2 - 1, 1 - (sticker.cy / h) * 2, 1);
+      const size = sticker.size * sticker.scale;
+      sprite.scale.set((size / w) * 2, (size / h) * 2, 1);
+      sprite.material.rotation = THREE.MathUtils.degToRad(sticker.rotation);
+    }
+  }
+
   function render() {
     const p = state.position;
     const delta = state.delta;
@@ -403,7 +571,8 @@ export function createWebglLayer({ canvas, state, onProgress }) {
     const hyperReveal = smoothstep(inverseLerp(8.65, 10.55, p));
     const hyperArrowIntro = smoothstep(inverseLerp(8.45, 9.7, p)) * (1 - smoothstep(inverseLerp(10.45, 11.35, p)));
     const hyperArrowOutro = smoothstep(inverseLerp(12.9, 13.65, p)) * (1 - smoothstep(inverseLerp(14.35, 14.85, p)));
-    const hyperArrowOpacity = Math.max(hyperArrowIntro, hyperArrowOutro);
+    const hyperCursorIntro = hyperArrowIntro * (1 - smoothstep(inverseLerp(9.9, 10.72, p)));
+    const hyperArrowOpacity = Math.max(hyperCursorIntro, hyperArrowOutro);
     const isMobile = window.innerWidth < 900;
 
     helloGroup.visible = heroOpacity > 0.002;
@@ -430,8 +599,8 @@ export function createWebglLayer({ canvas, state, onProgress }) {
       cursorGroup.rotation.x = degrees(52 + outroTurn * 145 + hyperReveal * 8);
       cursorGroup.rotation.y = degrees(lerp(-26, 14, hyperReveal) + lerp(0, 182, outroTurn) + Math.sin(state.time * 0.001) * 4);
       cursorGroup.rotation.z = degrees(lerp(-22, -4, hyperReveal) + lerp(0, 18, outroTurn));
-      cursorGroup.scale.setScalar(Math.max(introScale * hyperArrowIntro, outroScale * hyperArrowOutro));
-      setOpacity(modelState.cursor.materials, hyperArrowOpacity * lerp(0.92, 0.28, hyperReveal));
+      cursorGroup.scale.setScalar(Math.max(introScale * hyperCursorIntro, outroScale * hyperArrowOutro));
+      setOpacity(modelState.cursor.materials, hyperArrowOpacity * lerp(0.88, 0.18, hyperReveal));
     } else {
       cursorGroup.position.set(isMobile ? 4.6 : 9.6, isMobile ? -5.2 : -4.25, -2.4);
       cursorGroup.rotation.x = degrees(45);
@@ -460,6 +629,7 @@ export function createWebglLayer({ canvas, state, onProgress }) {
     camera.position.x = damp(camera.position.x, targetCameraX, 4.8, delta);
     camera.position.y = damp(camera.position.y, targetCameraY, 4.8, delta);
     camera.lookAt(0, 0, 0);
+    updateHeroGlassBounds(heroOpacity);
 
     pointerLight.position.x = state.pointer.nx * 10;
     pointerLight.position.y = state.pointer.ny * 6;
@@ -474,6 +644,7 @@ export function createWebglLayer({ canvas, state, onProgress }) {
     refractionBackground.material.uniforms.uTime.value = state.time;
     refractionBackground.material.uniforms.uScroll.value = p;
     refractionBackground.material.uniforms.uDark.value = dark ? 1 : 0;
+    refractionBackground.material.uniforms.uPointerSpeed.value = state.pointer.speed;
     refractionBackground.material.uniforms.uPointer.value.set(
       state.pointer.x / Math.max(window.innerWidth, 1),
       1 - state.pointer.y / Math.max(window.innerHeight, 1)
@@ -494,6 +665,7 @@ export function createWebglLayer({ canvas, state, onProgress }) {
       }
     }
 
+    updateRefractionSprites();
     renderer.setRenderTarget(refractionTarget);
     renderer.render(refractionBackground.scene, refractionBackground.camera);
     renderer.setRenderTarget(null);
