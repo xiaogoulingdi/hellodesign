@@ -178,73 +178,86 @@ export function createFxLayer({ canvas, state }) {
     const centerX = w * 0.5;
     const centerY = h * 0.51;
     const maxRadius = Math.hypot(w, h) * 0.78;
-    const arrowIntro = smoothstep(inverseLerp(0, 0.24, phase)) * (1 - smoothstep(inverseLerp(0.42, 0.56, phase)));
-    const reveal = smoothstep(inverseLerp(0.11, 0.32, phase));
-    const textCore = reveal * (1 - smoothstep(inverseLerp(0.7, 0.82, phase)));
-    const arrowOutro = smoothstep(inverseLerp(0.72, 0.83, phase));
-    const burst = clamp(progress * (0.82 + arrowIntro * 0.8 + arrowOutro * 0.45));
+    const moveIn = smoothstep(inverseLerp(0.02, 0.18, phase));
+    const flip = smoothstep(inverseLerp(0.16, 0.34, phase));
+    const reveal = smoothstep(inverseLerp(0.28, 0.48, phase));
+    const hold = 1 - smoothstep(inverseLerp(0.58, 0.72, phase));
+    const reverse = smoothstep(inverseLerp(0.68, 0.9, phase));
+    const arrowLife = progress * (1 - smoothstep(inverseLerp(0.94, 1.0, phase)));
+    const textCore = reveal * hold;
+    const portal = smoothstep(inverseLerp(0.16, 0.36, phase)) * (1 - smoothstep(inverseLerp(0.82, 0.96, phase)));
+    const burst = clamp(portal * (0.55 + textCore * 0.5));
     const palette = dark
       ? ["78,249,255", "32,169,255", "103,79,255", "239,49,255"]
       : ["0,85,255", "32,118,205", "93,57,205", "8,25,60"];
     const stagePulse = 0.5 + 0.5 * Math.sin(state.time * 0.0015);
+    const startX = w * 0.82;
+    const startY = h * 0.73;
+    const arrowX = lerp(startX, centerX, moveIn);
+    const arrowY = lerp(startY, centerY, moveIn);
+    const flipScale = Math.abs(Math.cos(flip * Math.PI));
+    const arrowMax = Math.min(w, h) * 0.58;
+    const arrowMin = Math.min(w, h) * 0.08;
+    const arrowGrow = lerp(Math.min(w, h) * 0.09, arrowMax, reveal);
+    const arrowScale = reverse > 0 ? lerp(arrowMax, arrowMin, reverse) : arrowGrow;
+    const arrowAlpha = arrowLife * (1 - textCore * 0.18);
 
     ctx.save();
     ctx.globalCompositeOperation = dark ? "screen" : "multiply";
     ctx.lineCap = "butt";
 
-    for (let index = 0; index < 340; index += 1) {
+    for (let index = 0; index < 260; index += 1) {
       const angle = seeded(index, 1) * Math.PI * 2;
       const base = seeded(index, 2);
-      const travel = (progress * 2.9 + base + state.time * 0.0001 + arrowOutro * 0.22) % 1;
-      const startRadius = lerp(6, maxRadius * 0.58, travel * travel);
-      const length = lerp(42, maxRadius * 0.42, travel) * (0.52 + seeded(index, 3)) * (1 + arrowIntro * 0.65);
+      const travel = (portal * 1.35 + base + state.time * 0.00008 - reverse * 0.82) % 1;
+      const startRadius = lerp(maxRadius * 0.06, maxRadius * 0.5, travel * travel);
+      const length = lerp(58, maxRadius * 0.38, travel) * (0.48 + seeded(index, 3)) * (1 + flip * 0.35);
       const endRadius = Math.min(maxRadius, startRadius + length);
       const squash = 0.74 + seeded(index, 5) * 0.24;
       const x1 = centerX + Math.cos(angle) * startRadius;
       const y1 = centerY + Math.sin(angle) * startRadius * squash;
       const x2 = centerX + Math.cos(angle) * endRadius;
       const y2 = centerY + Math.sin(angle) * endRadius * squash;
-      const alpha = burst * lerp(0.18, 0.9, travel) * (0.54 + textCore * 0.46);
+      const alpha = burst * lerp(0.1, 0.64, travel) * (0.5 + textCore * 0.5) * (1 - reverse * 0.62);
       ctx.strokeStyle = rgba(palette[index % palette.length], alpha);
-      ctx.lineWidth = 1.3 + seeded(index, 4) * 3.6 + stagePulse * 0.6 + arrowIntro * 2.8;
+      ctx.lineWidth = 1.2 + seeded(index, 4) * 3.1 + stagePulse * 0.45 + flip * 1.4;
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
     }
 
-    const coreRadius = maxRadius * lerp(0.18, 0.3, Math.max(arrowIntro, arrowOutro));
+    const coreRadius = maxRadius * lerp(0.18, 0.42, Math.max(flip, reveal)) * (1 - reverse * 0.44);
     const core = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, coreRadius);
-    core.addColorStop(0, dark ? rgba("120,150,255", 0.18 + arrowIntro * 0.22) : rgba("0,80,255", 0.09 + arrowIntro * 0.1));
+    core.addColorStop(0, dark ? rgba("120,150,255", 0.24 + portal * 0.22) : rgba("0,80,255", 0.12 + portal * 0.12));
+    core.addColorStop(0.16, dark ? rgba("115,185,255", 0.18 * portal) : rgba("48,115,255", 0.08 * portal));
     core.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = core;
     ctx.fillRect(0, 0, w, h);
 
-    const arrowSize = lerp(Math.min(w, h) * 0.08, Math.min(w, h) * 0.58, arrowIntro)
-      + lerp(0, Math.min(w, h) * 0.18, arrowOutro);
-    const spin = arrowOutro * Math.PI * 1.15 + Math.sin(state.time * 0.001) * 0.08;
     ctx.save();
-    ctx.translate(centerX, centerY);
-    ctx.rotate(-0.55 + spin);
+    ctx.translate(arrowX, arrowY);
+    ctx.rotate(lerp(-0.72, -0.55, moveIn) + flip * Math.PI);
+    ctx.scale(Math.max(0.08, flipScale), 1);
     ctx.globalCompositeOperation = dark ? "screen" : "multiply";
-    ctx.globalAlpha = (arrowIntro * (1 - reveal * 0.42) + arrowOutro * 0.72) * (dark ? 0.72 : 0.44);
+    ctx.globalAlpha = arrowAlpha * (dark ? 0.82 : 0.5);
     ctx.fillStyle = dark ? "#45dfff" : "#174cff";
     ctx.strokeStyle = dark ? "#d8fbff" : "#07168f";
-    ctx.lineWidth = Math.max(2, arrowSize * 0.055);
+    ctx.lineWidth = Math.max(2, arrowScale * 0.045);
     ctx.beginPath();
-    ctx.moveTo(arrowSize * 0.56, 0);
-    ctx.lineTo(-arrowSize * 0.38, -arrowSize * 0.42);
-    ctx.lineTo(-arrowSize * 0.18, 0);
-    ctx.lineTo(-arrowSize * 0.38, arrowSize * 0.42);
+    ctx.moveTo(arrowScale * 0.56, 0);
+    ctx.lineTo(-arrowScale * 0.38, -arrowScale * 0.42);
+    ctx.lineTo(-arrowScale * 0.18, 0);
+    ctx.lineTo(-arrowScale * 0.38, arrowScale * 0.42);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
-    if (arrowIntro > 0.02) {
-      ctx.globalAlpha = arrowIntro * (1 - reveal * 0.25) * (dark ? 0.18 : 0.1);
-      ctx.lineWidth = Math.max(1, arrowSize * 0.018);
+    if (portal > 0.02 && reverse < 0.8) {
+      ctx.globalAlpha = portal * (1 - reverse) * (dark ? 0.15 : 0.08);
+      ctx.lineWidth = Math.max(1, arrowScale * 0.012);
       for (let index = 0; index < 5; index += 1) {
         ctx.beginPath();
-        ctx.arc(0, 0, arrowSize * (0.28 + index * 0.11), -0.65, 0.82);
+        ctx.arc(0, 0, arrowScale * (0.24 + index * 0.1), -0.65, 0.82);
         ctx.stroke();
       }
     }

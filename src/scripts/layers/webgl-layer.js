@@ -565,14 +565,8 @@ export function createWebglLayer({ canvas, state, onProgress }) {
     const delta = state.delta;
     const heroProgress = smoothstep(inverseLerp(0, 2.75, p));
     const contactProgress = smoothstep(inverseLerp(14.75, 16.75, p));
-    const hyperProgress = inverseLerp(8.55, 14.85, p);
     const heroOpacity = 1 - smoothstep(inverseLerp(2.25, 3.05, p));
     const contactOpacity = smoothstep(inverseLerp(14.7, 15.25, p));
-    const hyperReveal = smoothstep(inverseLerp(8.65, 10.55, p));
-    const hyperArrowIntro = smoothstep(inverseLerp(8.45, 9.7, p)) * (1 - smoothstep(inverseLerp(10.45, 11.35, p)));
-    const hyperArrowOutro = smoothstep(inverseLerp(12.9, 13.65, p)) * (1 - smoothstep(inverseLerp(14.35, 14.85, p)));
-    const hyperCursorIntro = hyperArrowIntro * (1 - smoothstep(inverseLerp(9.9, 10.72, p)));
-    const hyperArrowOpacity = Math.max(hyperCursorIntro, hyperArrowOutro);
     const isMobile = window.innerWidth < 900;
 
     helloGroup.visible = heroOpacity > 0.002;
@@ -586,29 +580,13 @@ export function createWebglLayer({ canvas, state, onProgress }) {
     helloGroup.scale.setScalar(helloScale * lerp(1, 0.86, heroProgress));
     setOpacity(modelState.hello.materials, heroOpacity);
 
-    cursorGroup.visible = heroOpacity > 0.002 || hyperArrowOpacity > 0.002;
-    if (hyperArrowOpacity > heroOpacity) {
-      const outroTurn = smoothstep(inverseLerp(13.0, 14.25, p));
-      const introScale = lerp(0.92, isMobile ? 9.5 : 16.5, smoothstep(inverseLerp(8.45, 10.2, p)));
-      const outroScale = lerp(isMobile ? 7.5 : 12.5, 0.95, smoothstep(inverseLerp(13.55, 14.75, p)));
-      cursorGroup.position.set(
-        lerp(isMobile ? -1.2 : -2.8, 0, hyperReveal),
-        lerp(isMobile ? 0.6 : 0.8, isMobile ? -0.1 : 0.1, hyperReveal),
-        lerp(-7.2, -5.8, hyperReveal)
-      );
-      cursorGroup.rotation.x = degrees(52 + outroTurn * 145 + hyperReveal * 8);
-      cursorGroup.rotation.y = degrees(lerp(-26, 14, hyperReveal) + lerp(0, 182, outroTurn) + Math.sin(state.time * 0.001) * 4);
-      cursorGroup.rotation.z = degrees(lerp(-22, -4, hyperReveal) + lerp(0, 18, outroTurn));
-      cursorGroup.scale.setScalar(Math.max(introScale * hyperCursorIntro, outroScale * hyperArrowOutro));
-      setOpacity(modelState.cursor.materials, hyperArrowOpacity * lerp(0.88, 0.18, hyperReveal));
-    } else {
-      cursorGroup.position.set(isMobile ? 4.6 : 9.6, isMobile ? -5.2 : -4.25, -2.4);
-      cursorGroup.rotation.x = degrees(45);
-      cursorGroup.rotation.y = degrees(heroProgress * 720 + state.time * 0.008);
-      cursorGroup.rotation.z = degrees(10 + Math.sin(state.time * 0.0012) * 7);
-      cursorGroup.scale.setScalar(1);
-      setOpacity(modelState.cursor.materials, heroOpacity);
-    }
+    cursorGroup.visible = heroOpacity > 0.002;
+    cursorGroup.position.set(isMobile ? 4.6 : 9.6, isMobile ? -5.2 : -4.25, -2.4);
+    cursorGroup.rotation.x = degrees(45);
+    cursorGroup.rotation.y = degrees(heroProgress * 720 + state.time * 0.008);
+    cursorGroup.rotation.z = degrees(10 + Math.sin(state.time * 0.0012) * 7);
+    cursorGroup.scale.setScalar(1);
+    setOpacity(modelState.cursor.materials, heroOpacity);
 
     contactGroup.visible = contactOpacity > 0.002;
     contactGroup.position.set(0, isMobile ? -0.4 : -0.2, 1.5);
